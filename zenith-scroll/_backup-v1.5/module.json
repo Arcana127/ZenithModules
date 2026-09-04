@@ -1,0 +1,11 @@
+{
+  "id": "zenith-scroll",
+  "title": "Zenith Academy Scroll",
+  "description": "Magical device HUD for Zenith Academy. Full conversation system with 1-on-1 and group chats, VN-style relationship panel with personal notes, gallery, gift progression, event countdowns, toast notifications, auto-timestamps, and GM command center.",
+  "version": "1.5.0",
+  "compatibility": { "minimum": "13", "verified": "13" },
+  "authors": [{ "name": "Zenith Academy GM" }],
+  "esmodules": ["scripts/zenith-scroll.mjs"],
+  "styles": ["styles/zenith-scroll.css"],
+  "socket": true
+}
