@@ -1,15 +1,32 @@
 /*
- * Zenith Academy Scroll — stylesheet
+ * Zenith Academy Scroll — stylesheet  (v1.8)
  *
- * Expanded from the minified build in v1.6. Rule order is unchanged from that
- * build and every declaration is reproduced verbatim, so the cascade is
- * identical; only whitespace and section banners were added.
+ * The device is a bracelet that projects a screen. That is the whole design
+ * brief, and it decides everything below:
  *
- * Palette lives in the :root token block below. Class prefixes:
- *   zsi-  scroll icon        zsu-  device frame / screen
- *   zsh-  home tab           zss-  schedule      zsg-  gift
- *   zsm-  messages           zsx-  gallery       zsr-  relationships
- *   zst-  toasts             zslb- lightbox      zg-   GM command center
+ *   - The bracelet is metal and gemstone: gradients, specular highlights, weight.
+ *   - The projection is LIGHT, not glass. No bezel, no metal frame, no drop
+ *     shadow — an emitted panel has a bloom, a hairline edge and a faint haze,
+ *     and it sits in a portrait column because that is the shape a handheld
+ *     interface wants.
+ *
+ * Palette is teal/gold/dark as always, but the teal is now an *accent token*
+ * the student picks in Settings, so two scrolls open side by side read as two
+ * different devices. Everything tinted reads --zd-accent; nothing hardcodes it.
+ *
+ * Every text size names a step on the type scale in section 1. Nothing here
+ * should carry a raw pixel font size again: the only survivors are icon glyph
+ * sizes and line-heights, which are not type.
+ *
+ * Class prefixes:
+ *   zsi-  bracelet icon      zsu-  projection frame / chrome
+ *   zsb-  notice board       zsl-  lock screen      zsn-  home screen
+ *   zsh-  student ID         zss-  schedule         zsg-  gift
+ *   zsm-  messages           zsx-  gallery          zsr-  contacts
+ *   zsk-  bank               zsp-  settings         zsy-  alerts
+ *   zsq-  notes              zsc-  camera           zsw-  capture sweep
+ *   zsmp- maps               zgm-  GM map editor    zgq-  GM message queue
+ *   zst-  toasts             zslb- lightbox         zg-   GM command center
  */
 
 /* ==========================================================================
@@ -19,220 +36,229 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
+  /* --- bracelet metal --- */
   --zd-body: #4a5e70;
   --zd-body-light: #6a7e90;
   --zd-body-dark: #354858;
   --zd-frame: #8090a0;
   --zd-frame-light: #a0aab5;
+
+  /* --- gold --- */
   --zd-gold: #c8a030;
   --zd-gold-light: #e0c050;
   --zd-gold-dark: #9a7020;
-  --zd-cyan: #50d8e8;
-  --zd-cyan-glow: rgba(80,216,232,0.5);
-  --zd-cyan-bright: #80f0f8;
-  --zd-screen: #9aeaea;
-  --zd-screen-light: #b8f4f4;
-  --zd-gem: #0a4a2a;
-  --zd-gem-shine: #1a8050;
-  --ztd: #1a3038;
-  --ztm: #3a6068;
-  --ztl: #5a8890;
-  --zgo: #d4940a;
-  --zgb: #e8b830;
+
+  /* --- accent: overwritten per student on #zs-icon and #zs-ui --- */
+  --zd-accent: #50d8e8;
+  --zd-accent-deep: #1c7f8e;
+  --zd-accent-bright: #a6f2fb;
+
+  /* --- projection interior --- */
+  --zp-ink: #040d12;
+  --zp-panel: #08161d;
+  --zp-panel-2: #0c1f28;
+  --zp-line: rgba(200,160,48,.22);
+  --zp-text: #d6e4e6;
+  --zp-dim: #7d939a;
+  --zp-faint: #52676e;
+
+  /* --- type --- */
   --zf: 'Outfit','Segoe UI',sans-serif;
   --zm: 'JetBrains Mono','Consolas',monospace;
+
+  /*
+   * Type scale.
+   *
+   * The stylesheet used to carry 121 font declarations across about twenty
+   * distinct pixel values (12.5, 11, 10, 9.5, 9, 8.5 ...), which meant "make the
+   * text bigger" was twenty separate decisions and any one of them could drift.
+   * Every text size now names a step here, and the scale is raised in one place.
+   *
+   * v1.8 raised it by roughly +1 at the small end and more at the top. Nothing
+   * sits below 10px any more: the micro-labels at 8-8.5px were the worst of the
+   * old sizes and are the main reason the device read as cramped.
+   */
+  --zt-2xs: 10px;      /* micro labels: NEXT, DORMITORY, category headers */
+  --zt-xs: 11px;       /* small labels and metadata */
+  --zt-sm: 12px;       /* secondary text */
+  --zt-base: 13px;     /* body */
+  --zt-md: 14px;       /* emphasised body, message bubbles */
+  --zt-lg: 16px;       /* subheads, app bar titles */
+  --zt-xl: 19px;       /* screen heads */
+  --zt-2xl: 22px;      /* display heads */
+  --zt-display: 68px;  /* the lock screen clock, and only that */
+
+  /*
+   * Line height.
+   *
+   * The stylesheet used to declare a line-height in four places and inherit the
+   * rest, which meant the device was reading Foundry's `body { line-height:
+   * 1.25 }` -- a number chosen for Foundry's sheets, not for 11-13px UI text in
+   * a narrow column, and one that moves whenever Foundry retunes it. Anything
+   * that can wrap (message bubbles, notice bodies, event descriptions) was
+   * being set solid enough that two lines read as one block.
+   *
+   * --zt-lh is the body value and the device's default. --zt-lh-tight is for
+   * type that is display-sized or known to be one line, where 1.5 would just
+   * add slack above and below a single row.
+   */
+  --zt-lh: 1.5;
+  --zt-lh-tight: 1.25;
+
+  /*
+   * Panel geometry, so the responsive rules and the JS both have one number to
+   * read rather than four copies of it.
+   */
+  --zs-panel-w: 480px;
+  --zs-panel-h: 880px;
+
+  /*
+   * Z-index ladder. Previously ad hoc (0,1,2,3,5,10,20,90,200,210,250,300),
+   * which is how the bracelet ended up *below* Foundry's own sheets. Foundry
+   * hands application windows an incrementing z-index, so the device sits well
+   * clear of that range rather than a few steps above it.
+   */
+  --zz-icon: 150;
+  --zz-toast: 210;
+  --zz-ui: 220;
+  --zz-gm: 230;
+  --zz-lightbox: 260;
 }
 
 /* ==========================================================================
-    2.  SCROLL ICON  —  THE DRAGGABLE CSS-DRAWN DEVICE
+    2.  THE BRACELET
    ========================================================================== */
 
 #zs-icon {
   position: fixed;
-  bottom: 80px;
-  left: 16px;
-  z-index: 90;
+  bottom: 84px;
+  left: 18px;
+  z-index: var(--zz-icon);
   cursor: pointer;
   user-select: none;
   touch-action: none;
-  transition: filter .2s,transform .2s;
+  transition: transform .22s cubic-bezier(.34,1.4,.64,1), filter .22s;
 }
 
-#zs-icon:hover {
-  filter: brightness(1.15);
-  transform: scale(1.06);
-}
-
-#zs-icon.zs-pulse {
-  animation: zspulse 1.2s ease-out;
-}
-
-@keyframes zspulse {
-  0% {
-    filter: brightness(1);
-    transform: scale(1);
-  }
-  25% {
-    filter: brightness(1.4) drop-shadow(0 0 14px var(--zd-cyan-glow));
-    transform: scale(1.1);
-  }
-  100% {
-    filter: brightness(1);
-    transform: scale(1);
-  }
-}
+#zs-icon:hover { transform: scale(1.08) rotate(-2deg); }
+#zs-icon:active { transform: scale(1.02); }
 
 .zsi-device {
   position: relative;
-  width: 52px;
-  height: 110px;
-  filter: drop-shadow(0 3px 8px rgba(0,0,0,.5));
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.55));
 }
 
-.zsi-shell {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg,var(--zd-frame-light),var(--zd-body-light) 15%,var(--zd-body) 50%,var(--zd-body-light) 85%,var(--zd-frame-light));
-  clip-path: polygon(50% 0%,90% 8%,100% 16%,100% 84%,90% 92%,50% 100%,10% 92%,0% 84%,0% 16%,10% 8%);
+.zsi-svg { display: block; overflow: visible; }
+
+/* The stone breathes. This is the module's one infinite animation, and the
+   reduced-motion block at the bottom kills it. */
+.zsi-stone { filter: drop-shadow(0 0 5px var(--zd-accent)); }
+
+.zsi-stone-halo {
+  transform-origin: 32px 35px;
+  animation: zsi-breathe 3.4s ease-in-out infinite;
 }
 
-.zsi-panel {
-  position: absolute;
-  top: 12%;
-  left: 10%;
-  right: 10%;
-  bottom: 12%;
-  background: linear-gradient(170deg,var(--zd-body),var(--zd-body-dark));
-  clip-path: polygon(8% 0%,92% 0%,100% 5%,100% 95%,92% 100%,8% 100%,0% 95%,0% 5%);
+@keyframes zsi-breathe {
+  0%, 100% { opacity: .16; transform: scale(1); }
+  50%      { opacity: .38; transform: scale(1.18); }
 }
 
-.zsi-trim {
-  position: absolute;
-  top: 13%;
-  left: 12%;
-  right: 12%;
-  bottom: 13%;
-  border: 1.5px solid var(--zd-gold-dark);
-  opacity: .5;
-  clip-path: polygon(6% 0%,94% 0%,100% 4%,100% 96%,94% 100%,6% 100%,0% 96%,0% 4%);
-}
+.zsi-chip { fill: var(--zd-accent-deep); opacity: .85; }
 
-.zsi-orb {
+/* Soft field of light around the stone, sitting under the SVG */
+.zsi-emit {
   position: absolute;
-  top: 50%;
   left: 50%;
-  width: 22px;
-  height: 22px;
+  top: 55%;
+  width: 46px;
+  height: 46px;
   transform: translate(-50%,-50%);
-}
-
-.zsi-orb-bezel {
-  position: absolute;
-  inset: -3px;
   border-radius: 50%;
-  background: conic-gradient(from 0deg,var(--zd-gold-dark),var(--zd-gold-light),var(--zd-gold),var(--zd-gold-dark));
+  background: radial-gradient(circle, var(--zd-accent) 0%, transparent 68%);
+  opacity: .22;
+  pointer-events: none;
+  z-index: -1;
 }
 
-.zsi-orb-crystal {
+#zs-icon:hover .zsi-emit { opacity: .4; }
+
+/* The hit target is a real button so the device is keyboard-reachable */
+.zsi-hit {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%,var(--zd-cyan-bright),var(--zd-cyan) 60%,#30a0b0);
-  box-shadow: 0 0 10px var(--zd-cyan-glow);
-  animation: zsorbglow 3s ease-in-out infinite;
+  padding: 0;
+  cursor: pointer;
+  color: transparent;
 }
 
-@keyframes zsorbglow {
-  0%,
-  100% {
-    box-shadow: 0 0 8px var(--zd-cyan-glow);
-  }
-  50% {
-    box-shadow: 0 0 18px var(--zd-cyan-glow),0 0 30px rgba(80,216,232,.15);
-  }
-}
-
-.zsi-gem {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%,var(--zd-gem-shine),var(--zd-gem));
-}
-
-.zsi-gem-t {
-  top: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-}
-
-.zsi-gem-b {
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-}
-
-.zsi-gem-tl {
-  top: 16%;
-  left: 18%;
-}
-
-.zsi-gem-tr {
-  top: 16%;
-  right: 18%;
-}
-
-.zsi-gem-bl {
-  bottom: 16%;
-  left: 18%;
-}
-
-.zsi-gem-br {
-  bottom: 16%;
-  right: 18%;
-}
-
+/*
+ * The label under the bracelet.
+ *
+ * It was #9a7020 at .75 opacity and 7px -- dim gold on whatever the scene
+ * happens to be, which on a bright map is close to invisible. Near-white at
+ * full opacity with a hard shadow reads over *any* background rather than only
+ * dark ones, which is the point: the bracelet sits on the canvas, and the
+ * canvas is not ours to control.
+ */
 .zsi-label {
-  font: 600 7px var(--zf);
-  letter-spacing: 3px;
+  font: 600 var(--zt-2xs) var(--zf);
+  letter-spacing: 3.2px;
   text-transform: uppercase;
-  color: var(--zd-gold-dark);
+  color: #eaf6f7;
   text-align: center;
-  margin-top: 3px;
-  opacity: .8;
+  margin: 2px -3.2px 0 0;   /* the -3.2px cancels the trailing letter-space */
+  opacity: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.7);
+  pointer-events: none;
 }
 
 .zsi-badge {
   position: absolute;
-  top: -4px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
+  top: 0;
+  right: -2px;
+  min-width: 20px;
+  height: 20px;
   background: #e03030;
   color: #fff;
-  font: 700 10px/18px var(--zf);
-  border-radius: 50%;
+  font: 700 var(--zt-sm)/20px var(--zf);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--zd-frame-light);
-  box-shadow: 0 1px 4px rgba(0,0,0,.4);
-  z-index: 2;
+  border: 2px solid #16242c;
+  box-shadow: 0 1px 5px rgba(0,0,0,.5);
+  z-index: 3;
+  pointer-events: none;
+}
+
+#zs-icon.zs-pulse { animation: zspulse 1.2s ease-out; }
+
+@keyframes zspulse {
+  0%   { filter: brightness(1); transform: scale(1); }
+  25%  { filter: brightness(1.35) drop-shadow(0 0 16px var(--zd-accent)); transform: scale(1.12); }
+  100% { filter: brightness(1); transform: scale(1); }
 }
 
 /* ==========================================================================
-    3.  TOAST NOTIFICATIONS
+    3.  TOASTS
    ========================================================================== */
 
 #zs-toasts {
   position: fixed;
-  bottom: 160px;
+  bottom: 164px;
   left: 20px;
-  z-index: 250;
+  z-index: var(--zz-toast);
+  font-family: var(--zf);
+  font-size: var(--zt-base);
+  line-height: var(--zt-lh);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -241,1560 +267,1970 @@
 
 .zs-toast {
   pointer-events: auto;
-  background: linear-gradient(135deg,#1a2830,#12191f);
-  border: 1px solid rgba(200,160,48,.25);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  background: linear-gradient(135deg, #12232b, #0a1319);
+  border: 1px solid var(--zp-line);
+  border-left: 2px solid var(--zd-accent);
   border-radius: 10px;
-  padding: 10px 16px;
-  color: #c8d0d0;
+  padding: 10px 14px;
+  color: var(--zp-text);
   font-family: var(--zf);
-  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+  box-shadow: 0 6px 22px rgba(0,0,0,.55), 0 0 18px -8px var(--zd-accent);
   cursor: pointer;
   animation: zstIn .3s ease;
-  max-width: 260px;
+  max-width: 280px;
 }
 
-.zs-toast.zst-out {
-  animation: zstOut .4s forwards;
-}
+.zs-toast.zst-out { animation: zstOut .4s forwards; pointer-events: none; }
 
-.zst-title {
-  font: 600 12px var(--zf);
-  color: var(--zd-gold);
-}
-
-.zst-body {
-  font: 11px var(--zf);
-  color: #8a9898;
+.zst-icon {
+  color: var(--zd-accent);
+  font-size: var(--zt-lg);
   margin-top: 2px;
+  flex-shrink: 0;
 }
+
+.zst-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.zst-title { font: 600 var(--zt-md) var(--zf); color: var(--zd-gold); }
+.zst-body { font: 400 var(--zt-base) var(--zf); color: var(--zp-dim); }
 
 @keyframes zstIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes zstOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
+  from { opacity: 1; }
+  to   { opacity: 0; transform: translateX(-20px); }
 }
 
 /* ==========================================================================
-    4.  DEVICE FRAME, SCREEN & NAVIGATION
+    4.  THE PROJECTION  —  frame, unfurl, stage
    ========================================================================== */
 
 #zs-ui {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--zz-ui);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(3px);
-  animation: zsfin .2s;
+  background: radial-gradient(ellipse at center, rgba(4,14,18,.55), rgba(0,0,0,.72));
+  backdrop-filter: blur(4px);
+  animation: zsfin .22s;
+
+  /*
+   * Size and leading are anchored here rather than inherited.
+   *
+   * The device is appended to Foundry's `body`, so anything it does not declare
+   * comes from Foundry -- 15px/1.25 in v14. Every rule in this stylesheet that
+   * omits a font size was therefore being set by the host application, and the
+   * design's own 13px base step only applied where a rule happened to name it.
+   * Declaring both on the root makes the type scale in section 1 the single
+   * source of truth and makes the device render the same whatever the host
+   * does with its own typography.
+   */
+  font-family: var(--zf);
+  font-size: var(--zt-base);
+  line-height: var(--zt-lh);
 }
 
-#zs-ui.zs-out {
-  animation: zsfout .3s forwards;
+/* Fading, and therefore no longer anybody's click target — the backdrop is
+   still full-screen for the length of the fade. */
+#zs-ui.zs-out { animation: zsfout .3s forwards; pointer-events: none; }
+
+@keyframes zsfin  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zsfout { from { opacity: 1; } to { opacity: 0; } }
+
+/* The haze at the bracelet's stone, where the light comes from */
+.zsu-emitter {
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--zd-accent) 0%, transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+  animation: zsemit 1.1s ease-out;
 }
 
-@keyframes zsfin {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/*
+ * Capped at .18. At .34 this 200px glow washed visibly over the panel whenever
+ * the bracelet had been dragged anywhere near the middle of the screen. render()
+ * also drops the element entirely when the stone is inside the frame's rect, so
+ * this cap is the belt to that pair of braces.
+ */
+@keyframes zsemit {
+  0%   { opacity: 0;   transform: scale(.2); }
+  18%  { opacity: .18; transform: scale(.7); }
+  100% { opacity: 0;   transform: scale(1.3); }
 }
 
-@keyframes zsfout {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
+/*
+ * The panel. Portrait, and made of light: the "frame" is a bloom plus a
+ * hairline, with no metal anywhere. Height is capped against the viewport so a
+ * laptop screen clamps rather than clipping.
+ */
 .zsu-frame {
   position: relative;
-  width: 720px;
+  width: var(--zs-panel-w);
   max-width: 94vw;
-  animation: zspin .4s cubic-bezier(.34,1.56,.64,1);
-  filter: drop-shadow(0 12px 40px rgba(0,0,0,.5));
+  height: var(--zs-panel-h);
+  max-height: 92vh;
+  animation: zsunfurl .55s cubic-bezier(.2,.86,.28,1);
+  transform-origin: center;
 }
 
-#zs-ui.zs-out .zsu-frame {
-  animation: zspout .25s forwards;
-}
+#zs-ui.zs-out .zsu-frame { animation: zsfurl .26s forwards; }
 
-@keyframes zspin {
-  from {
+/* Light unfurling from the stone: a sliver, then a column, then the panel. */
+@keyframes zsunfurl {
+  0% {
     opacity: 0;
-    transform: scale(.8) translateY(30px);
+    transform: translate(var(--zs-dx,0), var(--zs-dy,0)) scale(.10,.015);
+    filter: blur(3px);
   }
-  to {
-    opacity: 1;
-    transform: none;
+  40% {
+    opacity: .85;
+    transform: translate(calc(var(--zs-dx,0px) * .34), calc(var(--zs-dy,0px) * .34)) scale(.52,.34);
+    filter: blur(1px);
   }
+  100% { opacity: 1; transform: none; filter: none; }
 }
 
-@keyframes zspout {
-  from {
-    opacity: 1;
-    transform: none;
-  }
-  to {
-    opacity: 0;
-    transform: scale(.85);
-  }
+@keyframes zsfurl {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translate(calc(var(--zs-dx,0px) * .5), calc(var(--zs-dy,0px) * .5)) scale(.3,.12); }
 }
 
-.zsu-body {
-  position: relative;
-  background: linear-gradient(160deg,var(--zd-frame-light),var(--zd-frame) 2%,var(--zd-body-light) 6%,var(--zd-body) 50%,var(--zd-body-light) 94%,var(--zd-frame) 98%,var(--zd-frame-light));
-  border-radius: 16px;
-  padding: 14px;
-  border: 1px solid rgba(0,0,0,.2);
-}
-
-.zsu-inner-frame {
-  position: relative;
-  background: linear-gradient(170deg,#1a2a34,#14222c);
-  border-radius: 10px;
-  padding: 10px;
-  border: 1px solid rgba(200,160,48,.15);
-}
-
-.zsu-gold-trim {
+/* Outer bloom — the panel's only "frame" */
+.zsu-bloom {
   position: absolute;
-  inset: 6px;
-  border: 1.5px solid rgba(200,160,48,.2);
-  border-radius: 12px;
+  inset: -26px;
+  border-radius: 26px;
+  background: radial-gradient(ellipse at center, var(--zd-accent) 0%, transparent 62%);
+  opacity: .16;
   pointer-events: none;
-  z-index: 1;
+  filter: blur(14px);
 }
 
-.zsu-corner {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.zsu-corner svg {
-  width: 100%;
-  height: 100%;
-}
-
-.zsu-corner-tl {
-  top: 6px;
-  left: 6px;
-}
-
-.zsu-corner-tr {
-  top: 6px;
-  right: 6px;
-  transform: scaleX(-1);
-}
-
-.zsu-corner-bl {
-  bottom: 6px;
-  left: 6px;
-  transform: scaleY(-1);
-}
-
-.zsu-corner-br {
-  bottom: 6px;
-  right: 6px;
-  transform: scale(-1);
-}
-
-.zsu-gem {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%,var(--zd-gem-shine),var(--zd-gem));
-  border: 1px solid rgba(60,60,60,.3);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.zsu-gem-tl {
-  top: 16px;
-  left: 16px;
-}
-
-.zsu-gem-tr {
-  top: 16px;
-  right: 16px;
-}
-
-.zsu-gem-bl {
-  bottom: 16px;
-  left: 16px;
-}
-
-.zsu-gem-br {
-  bottom: 16px;
-  right: 16px;
-}
-
-.zsu-gem-ml {
-  top: 50%;
-  left: 5px;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-}
-
-.zsu-gem-mr {
-  top: 50%;
-  right: 5px;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-}
-
-.zsu-orb {
-  position: absolute;
-  top: 50%;
-  width: 36px;
-  height: 36px;
-  transform: translateY(-50%);
-  z-index: 3;
-  pointer-events: none;
-}
-
-.zsu-orb-l {
-  left: -4px;
-}
-
-.zsu-orb-r {
-  right: -4px;
-}
-
-.zsu-orb-bezel {
+/* Hairline edge, with corner ticks drawn as gradient stops rather than art */
+.zsu-edge {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(from 45deg,var(--zd-gold-dark),var(--zd-gold-light),var(--zd-gold),var(--zd-gold-dark),var(--zd-gold-light),var(--zd-gold-dark));
-  box-shadow: 0 2px 6px rgba(0,0,0,.4);
+  border-radius: 18px;
+  border: 1px solid var(--zd-accent);
+  opacity: .5;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(200,160,48,.14),
+    inset 0 0 24px -6px var(--zd-accent),
+    0 0 30px -6px var(--zd-accent);
 }
 
-.zsu-orb-crystal {
+.zsu-edge::before,
+.zsu-edge::after {
+  content: "";
   position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%,var(--zd-cyan-bright),var(--zd-cyan) 50%,#2890a0);
-  box-shadow: 0 0 14px var(--zd-cyan-glow);
-  animation: zsorbglow 3s ease-in-out infinite;
+  left: -1px;
+  right: -1px;
+  height: 16px;
+  border-left: 2px solid var(--zd-gold);
+  border-right: 2px solid var(--zd-gold);
+  opacity: .55;
+  pointer-events: none;
 }
 
+.zsu-edge::before { top: 10px; }
+.zsu-edge::after  { bottom: 10px; }
+
+/*
+ * `container-type: size` is what lets the lock screen respond to the *panel*
+ * rather than the viewport. The old `@media (max-height: ...)` blocks are keyed
+ * to the window, so they missed exactly the case that broke: a panel clamped by
+ * its own `max-height` inside a window that is still tall.
+ */
 .zsu-screen {
-  position: relative;
-  background: linear-gradient(135deg,var(--zd-screen-light),var(--zd-screen));
-  border-radius: 8px;
-  border: 2px solid var(--zd-body-dark);
-  box-shadow: inset 0 0 20px rgba(0,0,0,.06);
-  overflow: hidden;
-  height: 680px;
-  max-height: 72vh;
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  container-name: zsscreen;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(175deg, var(--zp-panel-2), var(--zp-panel) 42%, var(--zp-ink));
+  color: var(--zp-text);
 }
 
-.zsu-screen::before {
-  content: '';
+/* Scanline texture — the screen is projected, and should read as it */
+.zsu-grain {
   position: absolute;
   inset: 0;
-  opacity: .045;
-  background-image: repeating-linear-gradient(45deg,transparent 0,transparent 14px,var(--ztd) 14px,var(--ztd) 15px),repeating-linear-gradient(-45deg,transparent 0,transparent 14px,var(--ztd) 14px,var(--ztd) 15px);
   pointer-events: none;
-  z-index: 0;
+  z-index: 4;
+  opacity: .5;
+  background: repeating-linear-gradient(
+    0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px);
+  mix-blend-mode: screen;
 }
 
-.zsu-scanline {
+/* One-shot boot sweep down the panel */
+.zsu-sweep {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
-  height: 4px;
-  background: linear-gradient(90deg,transparent,rgba(200,160,48,.3) 15%,rgba(125,232,232,.6) 35%,rgba(255,255,255,.9) 50%,rgba(125,232,232,.6) 65%,rgba(200,160,48,.3) 85%,transparent);
-  z-index: 5;
+  height: 34%;
+  top: -34%;
   pointer-events: none;
-  animation: zsscan .4s ease-out forwards;
-  box-shadow: 0 0 20px var(--zd-cyan-glow),0 0 40px rgba(80,216,232,.2);
+  z-index: 5;
+  background: linear-gradient(180deg, transparent, var(--zd-accent) 60%, transparent);
+  opacity: .16;
+  animation: zssweep .85s ease-out .1s 1 both;
 }
 
-@keyframes zsscan {
-  0% {
-    top: 0;
-    opacity: 1;
-  }
-  70% {
-    opacity: .7;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
+@keyframes zssweep {
+  from { top: -34%; opacity: .22; }
+  to   { top: 105%; opacity: 0; }
 }
 
-.zsu-content {
-  position: relative;
-  flex: 1;
-  overflow-y: auto;
-  z-index: 1;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(76,184,192,.3) transparent;
-  min-height: 0;
-}
-
-.zsu-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.zsu-content::-webkit-scrollbar-thumb {
-  background: rgba(76,184,192,.3);
-  border-radius: 4px;
-}
-
-.zsu-inner {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .3s ease .25s,transform .3s ease .25s;
-  font-family: var(--zf);
-  padding: 14px 16px 10px;
-  min-height: 100%;
-  box-sizing: border-box;
-}
-
-.zsu-inner.zsu-booted {
-  opacity: 1;
-  transform: none;
-}
-
+/*
+ * Inside the panel, not outside it.
+ *
+ * At `top: -14px; right: -14px` this sat beyond `.zsu-frame` entirely, floating
+ * on the outer bloom — and on a short viewport, where the frame is already
+ * clamped against its vh cap, it could end up under the browser chrome with
+ * nothing left to click. It now sits in the app bar's right end, which is where
+ * a close control belongs and which the app bar reserves room for.
+ */
 .zsu-close {
   position: absolute;
-  top: 8px;
-  right: 18px;
-  z-index: 10;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: var(--zd-frame-light);
-  cursor: pointer;
+  top: 9px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(0,0,0,.15);
-  transition: all .15s;
+  border: 1px solid var(--zp-line);
+  background: rgba(10,22,28,.86);
+  color: var(--zp-dim);
+  font: 300 var(--zt-2xl)/1 var(--zf);
+  cursor: pointer;
+  z-index: 9;
+  transition: color .15s, border-color .15s, transform .15s;
 }
 
 .zsu-close:hover {
-  color: #fff;
-  background: rgba(0,0,0,.3);
+  color: var(--zd-accent);
+  border-color: var(--zd-accent);
+  transform: rotate(90deg);
 }
 
-.zsu-nav {
+/* --- stage: where views come and go --- */
+
+.zsu-stage {
   position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 10px 10px;
-  background: linear-gradient(0deg,rgba(26,42,52,.5),rgba(154,234,234,.15) 40%,transparent);
-  flex-shrink: 0;
-  border-top: 1px solid rgba(200,160,48,.1);
 }
 
-.zsu-navbtn {
+.zsu-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.zsv-in-fwd   { animation: zsvInF .26s cubic-bezier(.2,.8,.3,1) both; }
+.zsv-in-back  { animation: zsvInB .26s cubic-bezier(.2,.8,.3,1) both; }
+.zsv-in-fade  { animation: zsvInX .18s ease both; }
+.zsv-out-fwd  { animation: zsvOutF .24s ease forwards; }
+.zsv-out-back { animation: zsvOutB .24s ease forwards; }
+.zsv-out-fade { animation: zsvOutX .16s ease forwards; }
+
+@keyframes zsvInF  { from { opacity: 0; transform: translateX(26px); }  to { opacity: 1; transform: none; } }
+@keyframes zsvInB  { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: none; } }
+@keyframes zsvInX  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zsvOutF { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-20px); } }
+@keyframes zsvOutB { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(20px); } }
+@keyframes zsvOutX { from { opacity: 1; } to { opacity: 0; } }
+
+/* --- the scroll region inside a view --- */
+
+.zsu-scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 16px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,160,48,.3) transparent;
+}
+
+.zsu-scroller::-webkit-scrollbar { width: 6px; }
+.zsu-scroller::-webkit-scrollbar-track { background: transparent; }
+.zsu-scroller::-webkit-scrollbar-thumb {
+  background: rgba(200,160,48,.28);
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+    5.  FLOATING TOOLTIP
+   ==========================================================================
+
+   The status bar used to live here. It carried four things and three of them
+   were duplicates or decoration: a small clock beside the lock screen's large
+   one, a charge meter that was pure flavour, an aether meter that only ever
+   said anything when there was no GM connected, and the notification bell.
+   The bell became the Alerts app plus a badge in the home header; the aether
+   meter became a strip that appears in Messages when the link is actually down;
+   the other two are simply gone, which is the point of removing the bar.
+
+   What is here instead is the tooltip layer. It is parented to <body> rather
+   than to the element it describes, because every ancestor inside the device
+   clips: `.zsu-scroller` on both axes, `.zsu-screen` on its rounded corners.
+   Nothing positioned to escape a scroller can be relied on to escape it.
+   ========================================================================== */
+
+.zsu-tip {
+  position: fixed;
+  z-index: calc(var(--zz-ui) + 5);
+  min-width: 140px;
+  max-width: 210px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--zp-line);
+  background: #0a1a21;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
+  color: var(--zp-text);
+  font-family: var(--zf);
+  pointer-events: none;
+  animation: zstipin .14s ease both;
+}
+
+@keyframes zstipin {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.zsu-tip-below { animation-name: zstipinb; }
+
+@keyframes zstipinb {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+    6.  DOCK & APP BAR
+   ========================================================================== */
+
+/*
+ * `space-around` with `flex: 1` children that also carry a `max-width` does not
+ * distribute evenly: the children grow to their cap and the leftover space is
+ * split unequally around them, so the row of five sat very slightly off centre.
+ * Fixed-width children under `space-evenly` put equal air between and around
+ * every one of them, which is what the eye is actually looking for.
+ */
+.zsu-dock {
   position: relative;
-  width: 42px;
-  height: 40px;
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  background: rgba(0,0,0,.08);
-  color: var(--ztl);
-  font-size: 15px;
-  cursor: pointer;
+  z-index: 6;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all .15s;
+  justify-content: space-evenly;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(200,160,48,.12);
+  background: linear-gradient(0deg, rgba(0,0,0,.34), transparent);
 }
 
-.zsu-navbtn:hover {
-  background: rgba(0,0,0,.15);
-  color: var(--ztd);
+/*
+ * `display: none` rather than `visibility: hidden`. Hidden, the dock still took
+ * its ~56px of height on the lock screen, so the usable stage was 56px shorter
+ * than the panel looked -- which is most of why the unlock button used to be
+ * cut in half on a short panel.
+ */
+.zsu-dock.zsd-hidden { display: none; }
+
+.zsd-btn {
+  position: relative;
+  flex: 0 0 auto;
+  width: 62px;
+  height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--zp-faint);
+  font-size: 17px;
+  cursor: pointer;
+  transition: color .16s, background .16s, transform .16s;
 }
 
-.zsu-navbtn.active {
-  background: rgba(200,160,48,.15);
-  border-color: rgba(200,160,48,.3);
-  color: var(--ztd);
-  box-shadow: 0 0 8px rgba(200,160,48,.15);
+.zsd-btn:hover { color: var(--zd-accent); background: rgba(255,255,255,.04); }
+
+.zsd-btn.active {
+  color: var(--zd-accent);
+  background: rgba(255,255,255,.055);
+  box-shadow: inset 0 0 0 1px rgba(200,160,48,.16);
 }
 
-.zsu-navdot {
+.zsd-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--zd-accent);
+  box-shadow: 0 0 6px var(--zd-accent);
+}
+
+.zsd-badge {
   position: absolute;
   top: 2px;
-  right: 2px;
+  right: 6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #e03030;
+  color: #fff;
+  font: 700 var(--zt-xs)/17px var(--zf);
+}
+
+/* --- app bar --- */
+
+/*
+ * A real three-column grid, and the two outer columns are equal `1fr`.
+ *
+ * That equality is what centres the title. The old flex version balanced a 30px
+ * back button against a 30px spacer, so the title was centred only while the
+ * trailing control happened to be exactly 30px wide -- and the Messages thread
+ * header, which swaps the title for an avatar block and adds a mute button, was
+ * visibly off. Here the side cells are sized by the grid rather than by their
+ * contents, so the trailing cell can hold two controls and the close reserve
+ * without moving the title a pixel.
+ */
+.zsu-appbar {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px 9px;
+  border-bottom: 1px solid rgba(200,160,48,.1);
+}
+
+.zsu-appbar > .zsu-back { justify-self: start; }
+
+.zsu-aptail {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zsu-back,
+.zsu-apbtn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--zp-dim);
+  font-size: var(--zt-lg);
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+
+.zsu-back:hover,
+.zsu-apbtn:hover {
+  color: var(--zd-accent);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(200,160,48,.18);
+}
+
+.zsu-apbtn.on { color: var(--zd-gold); }
+
+.zsu-apptitle {
+  min-width: 0;
+  margin: 0;
+  font: 600 var(--zt-lg) var(--zf);
+  letter-spacing: .4px;
+  color: var(--zp-text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Keeps the trailing control out from under the floating close button. */
+.zsu-apbspacer { width: 32px; flex-shrink: 0; }
+
+/* ==========================================================================
+    7.  LOCK SCREEN
+   ========================================================================== */
+
+/*
+ * THE LOCK SCREEN CLIPPING BUG.
+ *
+ * `.zsl-open` uses `margin-top: auto` to push itself to the bottom. When the
+ * content is taller than the space available that auto margin collapses to zero
+ * and the button simply overflows the bottom of this wrap -- where the screen's
+ * own `overflow: hidden` and rounded corner slice straight through it. At a
+ * panel height of 520px the words TOUCH THE STONE were cut in half. Nothing
+ * scrolled and nothing shrank; it was just gone.
+ *
+ * There was no overflow rule here at all. `overflow-y: auto` is the floor under
+ * everything else: whatever happens to the spacing above, the unlock affordance
+ * is now reachable rather than clipped. The two other halves of the fix are the
+ * dock collapsing to `display: none` on lock (recovering the ~56px it used to
+ * hold while merely invisible) and the container queries at the bottom of this
+ * section, which shrink the fixed spacing against the *panel* rather than the
+ * window.
+ */
+.zsl-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 44px 26px 24px;
+  text-align: center;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,160,48,.3) transparent;
+}
+
+.zsl-wrap::-webkit-scrollbar { width: 6px; }
+.zsl-wrap::-webkit-scrollbar-thumb { background: rgba(200,160,48,.28); border-radius: 3px; }
+
+.zsl-device {
+  font: 500 var(--zt-sm) var(--zm);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--zd-gold-dark);
+  margin: 0 -3px 14px 0;   /* the -3px cancels the trailing letter-space */
+}
+
+.zsl-clock {
+  flex-shrink: 0;
+  font: 200 var(--zt-display)/1.2 var(--zf);
+  letter-spacing: -1px;
+  color: #eaf6f7;
+  text-shadow: 0 0 26px var(--zd-accent);
+}
+
+.zsl-date {
+  font: 400 var(--zt-md) var(--zf);
+  letter-spacing: 1.6px;
+  color: var(--zp-dim);
+  margin: 6px -1.6px 0 0;
+}
+
+.zsl-rule {
+  width: 54px;
+  height: 1px;
+  margin: 22px 0 4px;
+  background: linear-gradient(90deg, transparent, var(--zd-gold), transparent);
+  opacity: .6;
+}
+
+.zsl-event {
+  margin-top: 16px;
+  padding: 12px 22px;
+  border: 1px solid rgba(200,160,48,.18);
+  border-radius: 12px;
+  background: rgba(255,255,255,.025);
+}
+
+.zsl-evlabel {
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.4px;
+  margin-right: -2.4px;
+  color: var(--zd-gold-dark);
+}
+
+.zsl-evname {
+  font: 500 var(--zt-xl) var(--zf);
+  color: var(--zp-text);
+  margin: 4px 0 2px;
+}
+
+.zsl-evdays {
+  font: 600 var(--zt-base) var(--zm);
+  letter-spacing: 1.6px;
+  margin-right: -1.6px;
+  color: var(--zd-accent);
+}
+
+.zsl-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.zsl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.04);
+  font: 500 var(--zt-base) var(--zf);
+  color: var(--zp-dim);
+}
+
+.zsl-pill i { color: var(--zd-accent); font-size: var(--zt-sm); }
+
+/* The unlock affordance — a stone to touch, not a button to press */
+.zsl-open {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px 4px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.zsl-openglow {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, var(--zd-accent-bright), var(--zd-accent) 52%, var(--zd-accent-deep));
+  box-shadow: 0 0 22px -2px var(--zd-accent);
+  animation: zsl-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes zsl-pulse {
+  0%, 100% { box-shadow: 0 0 18px -4px var(--zd-accent); transform: scale(1); }
+  50%      { box-shadow: 0 0 34px -2px var(--zd-accent); transform: scale(1.06); }
+}
+
+.zsl-opentext {
+  font: 500 var(--zt-sm) var(--zm);
+  letter-spacing: 2.4px;
+  margin-right: -2.4px;
+  text-transform: uppercase;
+  color: var(--zp-faint);
+  transition: color .2s;
+}
+
+.zsl-open:hover .zsl-opentext { color: var(--zd-accent); }
+.zsl-open:hover .zsl-openglow { box-shadow: 0 0 34px 0 var(--zd-accent); }
+
+/* ==========================================================================
+    8.  HOME  —  app grid
+   ========================================================================== */
+
+/*
+ * `padding-right` clears the floating close button; the bell sits inside that
+ * reserve, immediately left of it.
+ */
+.zsn-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 50px 10px 18px;
+}
+
+.zsn-who { flex: 1; }
+
+/*
+ * The notification bell that used to live in the status bar.
+ *
+ * Alerts is a full app in the grid now, but a badge you have to go hunting for
+ * among ten tiles is not a notification. This is the one place it needs to be
+ * visible the moment the device unlocks.
+ */
+.zsn-bell {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--zp-dim);
+  font-size: var(--zt-lg);
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+
+.zsn-bell:hover {
+  color: var(--zd-accent);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(200,160,48,.18);
+}
+
+.zsn-bell.has { color: var(--zd-gold); }
+
+.zsn-belldot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #e03030;
-  border: 1.5px solid rgba(255,255,255,.5);
+  box-shadow: 0 0 5px #e03030;
 }
 
-/* ==========================================================================
-    5.  SHARED CONTENT PRIMITIVES
-   ========================================================================== */
-
-#zs-ui .zs-ttl {
-  font: 600 11px/1 var(--zf);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--ztl);
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(0,0,0,.06);
-}
-
-#zs-ui .zs-empty {
-  text-align: center;
-  color: var(--ztl);
-  font: 13px var(--zf);
-  padding: 30px 10px;
-  opacity: .7;
-}
-
-/* ==========================================================================
-    6.  HOME TAB
-   ========================================================================== */
-
-.zsh-header {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.zsh-portrait {
-  width: 80px;
-  height: 80px;
+.zsn-pic {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
+  border: 1px solid var(--zd-accent);
+  box-shadow: 0 0 14px -4px var(--zd-accent);
+}
+
+.zsn-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.zsn-who { min-width: 0; }
+
+.zsn-name {
+  font: 600 var(--zt-xl) var(--zf);
+  color: #eaf6f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsn-sub {
+  font: 400 var(--zt-base) var(--zf);
+  letter-spacing: 1.2px;
+  color: var(--zd-gold-dark);
+  text-transform: uppercase;
+}
+
+.zsn-status {
   flex-shrink: 0;
-  border: 3px solid rgba(200,160,48,.4);
-  box-shadow: 0 0 0 2px rgba(200,160,48,.2),0 0 16px rgba(200,160,48,.1);
+  margin: 0 18px 6px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--zd-accent);
+  border-radius: 0 8px 8px 0;
+  background: rgba(255,255,255,.03);
+  font: 400 var(--zt-md) var(--zf);
+  font-style: italic;
+  color: var(--zp-dim);
 }
 
-.zsh-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.zsn-status i { color: var(--zd-accent); font-size: var(--zt-xs); margin-right: 5px; opacity: .7; }
+
+/*
+ * The column gap was 6px while the badge overhangs its tile by 5px on the right,
+ * so a badge landed a pixel from the neighbouring tile. 14px gives the overhang
+ * room, and the tiles have grown with the panel besides.
+ */
+.zsn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 14px;
+  padding-top: 10px;
 }
 
-.zsh-info {
+.zsn-app {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.zsh-name {
-  font: 700 20px/1.1 var(--zf);
-  color: var(--ztd);
-}
-
-.zsh-cohort {
-  font: 600 12px var(--zf);
-  color: var(--zgo);
-  letter-spacing: .5px;
-}
-
-.zsh-id {
-  font: 400 10px var(--zm);
-  color: var(--ztl);
-  letter-spacing: 1px;
-  margin-top: 1px;
-}
-
-.zsh-status {
-  margin-top: 4px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
   cursor: pointer;
-  padding: 3px 10px;
-  background: rgba(0,0,0,.04);
+  color: inherit;
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,.06);
-  min-height: 22px;
+  transition: transform .16s cubic-bezier(.34,1.4,.64,1);
+}
+
+.zsn-app:hover { transform: translateY(-3px); }
+.zsn-app:active { transform: translateY(-1px) scale(.97); }
+
+.zsn-tile {
+  position: relative;
+  width: 62px;
+  height: 62px;
   display: flex;
   align-items: center;
-  transition: background .1s;
+  justify-content: center;
+  border-radius: 17px;
+  font-size: 24px;
+  color: var(--zd-accent);
+  background: linear-gradient(150deg, rgba(255,255,255,.09), rgba(255,255,255,.02));
+  border: 1px solid rgba(200,160,48,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 3px 10px rgba(0,0,0,.35);
+  transition: box-shadow .18s, border-color .18s;
 }
 
-.zsh-status:hover {
-  background: rgba(0,0,0,.08);
+.zsn-app:hover .zsn-tile {
+  border-color: var(--zd-accent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 18px -4px var(--zd-accent);
 }
 
-.zsh-stxt {
-  font: 400 11px var(--zf);
-  color: var(--ztm);
+/* Inset, so the overhang stays inside the grid gap and the scroller's padding. */
+.zsn-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #e03030;
+  color: #fff;
+  font: 700 var(--zt-sm)/1 var(--zf);
+  border: 2px solid var(--zp-panel);
 }
 
-.zsh-stph {
-  color: var(--ztl);
-  opacity: .5;
+.zsn-label {
+  font: 500 var(--zt-sm) var(--zf);
+  letter-spacing: .3px;
+  color: var(--zp-dim);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+    9.  SHARED CONTENT BITS
+   ========================================================================== */
+
+.zs-empty {
+  padding: 40px 20px;
+  text-align: center;
+  font: 400 var(--zt-md) var(--zf);
+  color: var(--zp-faint);
   font-style: italic;
 }
 
-.zsh-statinput {
-  border: none;
-  background: transparent;
-  color: var(--ztd);
-  font: 400 11px var(--zf);
-  outline: none;
-  width: 100%;
-  padding: 0;
-}
+/* ==========================================================================
+    10.  STUDENT ID
+   ========================================================================== */
 
-.zsh-event {
-  background: linear-gradient(135deg,rgba(212,148,10,.1),rgba(26,26,26,.04));
-  border: 1px solid rgba(200,160,48,.25);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
+.zsh-card {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(200,160,48,.2);
+  background: linear-gradient(140deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
+  overflow: hidden;
 }
 
-.zsh-evlabel {
-  font: 600 8px var(--zf);
-  letter-spacing: 2px;
-  color: var(--ztl);
+.zsh-cardglow {
+  position: absolute;
+  top: -60%;
+  right: -30%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--zd-accent), transparent 66%);
+  opacity: .12;
+  pointer-events: none;
+}
+
+.zsh-portrait {
+  width: 74px;
+  height: 74px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--zd-accent);
+  box-shadow: 0 0 16px -5px var(--zd-accent);
+}
+
+.zsh-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.zsh-info { min-width: 0; position: relative; }
+
+.zsh-name { font: 600 var(--zt-xl) var(--zf); color: #eaf6f7; line-height: 1.2; }
+
+.zsh-cohort {
+  font: 500 var(--zt-sm) var(--zm);
+  letter-spacing: 1.6px;
   text-transform: uppercase;
+  color: var(--zd-gold);
+  margin-top: 3px;
 }
 
-.zsh-evname {
-  font: 600 13px var(--zf);
-  color: var(--ztd);
-  flex: 1;
+.zsh-id {
+  font: 400 var(--zt-base) var(--zm);
+  letter-spacing: 1.4px;
+  color: var(--zp-faint);
+  margin-top: 5px;
 }
 
-.zsh-evdays {
-  font: 700 14px var(--zf);
-  color: var(--zgo);
-  white-space: nowrap;
+/* --- status line --- */
+
+.zsh-status { margin: 12px 0; }
+
+.zsh-statbtn {
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: 1px dashed rgba(200,160,48,.2);
+  border-radius: 9px;
+  background: rgba(255,255,255,.02);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
 }
 
-.zsh-stats {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 6px;
-  margin-bottom: 10px;
+.zsh-statbtn:hover { border-color: var(--zd-accent); background: rgba(255,255,255,.045); }
+
+.zsh-stxt { font: 400 var(--zt-md) var(--zf); font-style: italic; color: var(--zp-text); }
+.zsh-stph { color: var(--zp-faint); }
+
+.zsh-statinput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 9px;
+  background: rgba(0,0,0,.3);
+  color: var(--zp-text);
+  font: 400 var(--zt-md) var(--zf);
 }
+
+/* --- stats --- */
+
+.zsh-stats { display: flex; gap: 8px; margin-bottom: 12px; }
 
 .zsh-stat {
-  background: rgba(0,0,0,.04);
-  border-radius: 8px;
-  padding: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
   text-align: center;
-  border: 1px solid rgba(0,0,0,.06);
 }
 
 .zsh-sl {
-  font: 600 7px var(--zf);
-  letter-spacing: 2px;
-  color: var(--ztl);
-  text-transform: uppercase;
-  margin-bottom: 3px;
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 1.6px;
+  margin-right: -1.6px;
+  color: var(--zp-faint);
 }
 
 .zsh-sv {
-  font: 700 14px var(--zf);
-  color: var(--ztd);
+  font: 500 var(--zt-lg) var(--zf);
+  color: var(--zp-text);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.zsh-gold {
-  color: var(--zgo)!important;
+.zsh-sv.zsh-gold { color: var(--zd-gold-light); font-weight: 600; }
+.zsh-sv.zsh-sm { font-size: var(--zt-base); }
+
+/* --- event --- */
+
+.zsh-event {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 11px;
+  border: 1px solid rgba(200,160,48,.2);
+  background: linear-gradient(100deg, rgba(200,160,48,.08), transparent);
 }
 
-.zsh-sm {
-  font-size: 11px!important;
-  font-weight: 600!important;
-}
+.zsh-evlabel { font: 600 var(--zt-2xs) var(--zm); letter-spacing: 2px; color: var(--zd-gold-dark); }
+.zsh-evname { font: 500 var(--zt-lg) var(--zf); color: var(--zp-text); margin: 4px 0 3px; }
+.zsh-evdays { font: 600 var(--zt-base) var(--zm); letter-spacing: 1.4px; color: var(--zd-accent); }
 
 .zsh-detail {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 7px 10px;
-  background: rgba(0,0,0,.04);
-  border-radius: 6px;
-  margin-bottom: 6px;
-  font: 12px var(--zf);
-  color: var(--ztd);
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+  border-radius: 9px;
+  background: rgba(255,255,255,.025);
+  font: 400 var(--zt-md) var(--zf);
+  color: var(--zp-text);
 }
 
-.zsh-dl {
-  font: 600 7px var(--zf);
-  letter-spacing: 2px;
-  color: var(--ztl);
-  text-transform: uppercase;
-}
+.zsh-dl { font: 600 var(--zt-2xs) var(--zm); letter-spacing: 1.6px; color: var(--zp-faint); align-self: center; }
 
 .zsh-notes {
-  font: 12px/1.5 var(--zf);
-  color: var(--ztm);
-  padding: 7px 10px;
-  background: rgba(0,0,0,.03);
-  border-radius: 6px;
-  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 2px solid var(--zd-gold);
+  background: rgba(255,255,255,.025);
+  font: 400 var(--zt-md)/1.6 var(--zf);
+  color: var(--zp-dim);
 }
 
-.zsh-announce {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.zsh-ann {
-  font: 11px var(--zf);
-  color: var(--ztd);
-  background: rgba(200,160,48,.08);
-  border: 1px solid rgba(200,160,48,.18);
-  border-radius: 6px;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.zsh-ann i {
-  color: var(--zgo);
-  margin-right: 2px;
-}
-
-.zsh-antime {
-  font-size: 9px;
-  color: var(--ztl);
-  margin-left: 4px;
-}
-
-.zsh-ann-x {
-  margin-left: auto;
-  cursor: pointer;
-  color: var(--ztl);
-  font-size: 14px;
-  padding: 0 4px;
-  opacity: .5;
-  transition: opacity .1s;
-}
-
-.zsh-ann-x:hover {
-  opacity: 1;
-}
+.zsh-notes p:first-child { margin-top: 0; }
+.zsh-notes p:last-child { margin-bottom: 0; }
 
 /* ==========================================================================
-    7.  SCHEDULE TAB
+    11.  SCHEDULE
    ========================================================================== */
 
 .zss-row {
   display: flex;
-  gap: 10px;
-  padding: 8px 10px;
-  background: rgba(0,0,0,.04);
-  border-radius: 8px;
-  margin-bottom: 5px;
-  border: 1px solid rgba(0,0,0,.04);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
 }
+
+.zss-row:last-child { border-bottom: 0; }
 
 .zss-period {
-  font: 600 9px var(--zf);
-  letter-spacing: 1px;
-  color: var(--zgo);
+  width: 82px;
+  flex-shrink: 0;
+  font: 600 var(--zt-xs) var(--zm);
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  white-space: nowrap;
-  min-width: 70px;
-  padding-top: 2px;
+  color: var(--zd-gold-dark);
+  padding-top: 3px;
 }
 
-.zss-course {
-  font: 600 13px var(--zf);
-  color: var(--ztd);
-}
-
-.zss-meta {
-  font: 10px var(--zf);
-  color: var(--ztl);
-  margin-top: 1px;
-}
+.zss-info { min-width: 0; }
+.zss-course { font: 500 var(--zt-lg) var(--zf); color: var(--zp-text); }
+.zss-meta { font: 400 var(--zt-base) var(--zf); color: var(--zp-faint); margin-top: 3px; }
 
 /* ==========================================================================
-    8.  GIFT TAB
+    12.  GIFT
    ========================================================================== */
 
 .zsg-head {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(200,160,48,.16);
 }
 
 .zsg-name {
-  font: 700 18px var(--zf);
-  color: var(--ztd);
+  font: 600 var(--zt-2xl) var(--zf);
+  color: #eaf6f7;
+  text-shadow: 0 0 18px var(--zd-accent);
 }
 
 .zsg-lvl {
-  font: 600 11px var(--zf);
-  color: var(--zgo);
-  background: rgba(200,160,48,.1);
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(200,160,48,.2);
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--zd-gold);
+  font: 600 var(--zt-base) var(--zm);
+  color: var(--zd-gold-light);
 }
 
 .zsg-desc {
-  font: 12px/1.6 var(--zf);
-  color: var(--ztm);
-  padding: 8px 10px;
-  background: rgba(0,0,0,.04);
-  border-radius: 6px;
-  margin-bottom: 12px;
+  font: 400 var(--zt-md)/1.65 var(--zf);
+  color: var(--zp-dim);
+  margin-bottom: 16px;
 }
 
 .zsg-mslabel {
-  font: 600 8px var(--zf);
-  letter-spacing: 2px;
-  color: var(--ztl);
-  text-transform: uppercase;
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.2px;
+  color: var(--zp-faint);
+  margin-bottom: 8px;
+}
+
+.zsg-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
   margin-bottom: 6px;
+}
+
+.zsg-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--zd-accent-deep), var(--zd-accent));
+  box-shadow: 0 0 10px -2px var(--zd-accent);
+  transition: width .5s cubic-bezier(.2,.8,.3,1);
+}
+
+.zsg-count {
+  font: 400 var(--zt-sm) var(--zm);
+  letter-spacing: 1px;
+  color: var(--zp-faint);
+  margin-bottom: 14px;
 }
 
 .zsg-ms {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  font: 12px var(--zf);
-  color: var(--ztl);
-  border-radius: 4px;
-  margin-bottom: 2px;
+  gap: 10px;
+  padding: 9px 0;
+  font: 400 var(--zt-md) var(--zf);
+  color: var(--zp-faint);
+  border-bottom: 1px solid rgba(255,255,255,.04);
 }
 
-.zsg-ms.done {
-  color: var(--ztd);
-  background: rgba(200,160,48,.08);
+.zsg-ms:last-child { border-bottom: 0; }
+.zsg-ms.done { color: var(--zp-text); }
+.zsg-dot { color: var(--zp-faint); font-size: var(--zt-base); }
+.zsg-ms.done .zsg-dot { color: var(--zd-gold); text-shadow: 0 0 8px var(--zd-gold); }
+
+/* --------------------------------------------------------------------------
+   The tree
+   --------------------------------------------------------------------------
+
+   The board fills whatever the panel has left under the header, because a tree
+   is a shape and a letterboxed strip of one is not a shape you can read. It is
+   a pan-and-zoom surface rather than a scroller: `.zsu-scroller` would fight
+   the drag, so the tree does not use one.
+*/
+
+.zsg-thead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  /* The view has no padding of its own — the scroller usually supplies it, and
+     the tree deliberately does not use one. */
+  padding: 2px 16px 10px;
+  border-bottom: 1px solid rgba(200,160,48,.16);
 }
 
-.zsg-dot {
-  font-size: 10px;
-  color: #a0a0a0;
+.zsg-tname {
+  font: 600 var(--zt-lg) var(--zf);
+  color: #eaf6f7;
+  text-shadow: 0 0 14px var(--zd-accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.zsg-ms.done .zsg-dot {
-  color: var(--zgo);
+.zsg-pts {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--zp-faint);
 }
 
-/* ==========================================================================
-    9.  MESSAGES TAB  —  THREAD LIST, CONVERSATION, COMPOSER
-   ========================================================================== */
+/* Points only earn the accent when there are some. A bright zero is a lie. */
+.zsg-pts.has { color: var(--zd-accent-bright); }
 
-.zsm-thread-wrap {
+.zsg-ptn { font: 700 var(--zt-lg) var(--zm); }
+.zsg-ptl { font: 400 var(--zt-xs) var(--zf); }
+
+.zsg-boardwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 10px 12px 12px;
+}
+
+.zsg-board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid rgba(200,160,48,.14);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(80,216,232,.06), transparent 60%),
+    #02080c;
+  cursor: grab;
+  touch-action: none;
+}
+
+.zsg-board.dragging { cursor: grabbing; }
+
+/*
+ * The coordinate space. Inset for the same reason the editor's is: a node is
+ * centred on its own percentage and is wider than it is tall, so 0% and 100%
+ * would put half of it outside a pane that has to clip.
+ */
+.zsg-plane {
+  position: absolute;
+  inset: 26px 54px;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.zsg-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.zsg-edge {
+  stroke: rgba(125,147,154,.35);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Both ends taken: a finished path should read as a path, not as a diagram. */
+.zsg-edge.lit {
+  stroke: var(--zd-accent);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px var(--zd-accent-deep));
+}
+
+.zsg-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
-
-.zsm-thread-header {
-  flex-shrink: 0;
-}
-
-.zsm-back {
-  font: 500 11px var(--zf);
-  color: var(--zgo);
+  align-items: center;
+  gap: 1px;
+  width: auto;
+  height: auto;
+  min-width: 62px;
+  max-width: 104px;
+  padding: 6px 8px;
+  border: 1px solid rgba(200,160,48,.2);
+  border-radius: 9px;
+  background: linear-gradient(180deg, var(--zp-panel-2), var(--zp-panel));
+  color: var(--zp-dim);
+  font: 500 var(--zt-xs)/1.25 var(--zf);
+  text-align: center;
   cursor: pointer;
-  margin-bottom: 8px;
+}
+
+.zsg-nlabel { word-break: break-word; }
+
+.zsg-ncost {
+  font: 700 var(--zt-xs) var(--zm);
+  color: var(--zd-gold);
+}
+
+.zsg-ntick { font-size: 9px; color: var(--zd-accent-bright); }
+
+/*
+ * The four states.
+ *
+ * "Locked by cost" and "locked by requirement" are drawn apart on purpose: *you
+ * cannot afford this yet* and *you have not earned the right to this* are
+ * different messages, and a tree that greys both out the same way reads as
+ * arbitrary.
+ */
+.zsg-node.s-taken {
+  border-color: var(--zd-accent);
+  color: #eaf6f7;
+  box-shadow: 0 0 12px rgba(80,216,232,.3), inset 0 0 14px rgba(80,216,232,.08);
+}
+
+.zsg-node.s-affordable {
+  border-color: var(--zd-gold);
+  color: var(--zp-text);
+  box-shadow: 0 0 14px rgba(224,192,80,.28);
+  animation: zsg-beckon 2.6s ease-in-out infinite;
+}
+
+.zsg-node.s-locked-cost { opacity: .78; }
+.zsg-node.s-locked-cost .zsg-ncost { color: #e8a06a; }
+
+.zsg-node.s-locked-req {
+  opacity: .42;
+  border-style: dashed;
+}
+
+.zsg-node.open { outline: 2px solid var(--zd-accent-bright); outline-offset: 2px; }
+
+@keyframes zsg-beckon {
+  0%, 100% { box-shadow: 0 0 14px rgba(224,192,80,.28); }
+  50%      { box-shadow: 0 0 20px rgba(224,192,80,.5); }
+}
+
+.zsg-node.k-capstone { border-radius: 14px; }
+.zsg-node.k-milestone { border-left: 3px solid var(--zd-gold); }
+.zsg-node.k-freeform { border-left: 3px solid #b48ce8; }
+
+.zsg-zoom {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zsg-zbtn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(200,160,48,.25);
+  border-radius: 8px;
+  background: rgba(2,8,12,.86);
+  color: var(--zp-dim);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.zsg-zbtn:hover { color: var(--zd-accent-bright); border-color: var(--zd-accent); }
+
+.zsg-recentre {
+  width: auto;
+  height: auto;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--zp-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zsg-recentre:hover { color: var(--zd-accent-bright); }
+
+/* --- the node sheet, over the board --- */
+
+.zsg-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  max-height: 62%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--zd-accent-deep);
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, rgba(12,31,40,.98), rgba(4,13,18,.99));
+  box-shadow: 0 -10px 30px rgba(0,0,0,.6);
+  animation: zsg-rise .18s ease-out;
+}
+
+@keyframes zsg-rise {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.zsg-shead {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  padding: 11px 12px 8px;
 }
 
-.zsm-back:hover {
-  color: var(--ztd);
+.zsg-skind {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid rgba(200,160,48,.3);
+  border-radius: 20px;
+  font: 600 var(--zt-xs) var(--zf);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--zd-gold);
 }
 
-.zsm-thead {
+.zsg-sname {
+  flex: 1;
+  min-width: 0;
+  font: 600 var(--zt-lg) var(--zf);
+  color: #eaf6f7;
+}
+
+.zsg-sclose {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+  color: var(--zp-dim);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zsg-sbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 10px;
+}
+
+.zsg-sdesc {
+  font: 400 var(--zt-base)/1.55 var(--zf);
+  color: var(--zp-text);
+  margin-bottom: 10px;
+}
+
+.zsg-slabel {
+  font: 700 var(--zt-xs) var(--zf);
+  letter-spacing: 1.2px;
+  color: var(--zp-faint);
+  margin: 10px 0 4px;
+}
+
+.zsg-seffect {
+  font: 400 var(--zt-sm)/1.5 var(--zm);
+  color: var(--zd-accent-bright);
+}
+
+.zsg-sneeds { font: 400 var(--zt-sm)/1.5 var(--zf); color: #e8a06a; }
+
+.zsg-sgrant {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-text);
+}
+
+.zsg-gimg { width: 20px; height: 20px; border-radius: 4px; flex: none; }
+
+.zsg-sfoot {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0,0,0,.06);
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
-.zsm-thimg {
+.zsg-scost {
+  flex: 1;
+  font: 600 var(--zt-base) var(--zf);
+  color: var(--zd-gold);
+}
+
+.zsg-stag {
+  flex: 1;
+  font: 500 var(--zt-base) var(--zf);
+  color: var(--zd-accent-bright);
+}
+
+.zsg-stag.locked { color: var(--zp-faint); }
+
+.zsg-take {
+  width: auto;
+  height: auto;
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border: 1px solid var(--zd-gold);
+  border-radius: 9px;
+  background: rgba(224,192,80,.12);
+  color: #f3e4b0;
+  font: 600 var(--zt-base) var(--zf);
+  cursor: pointer;
+}
+
+.zsg-take:hover { background: rgba(224,192,80,.24); color: #fff6d8; }
+
+/* ==========================================================================
+    13.  NOTICES  (the school board)
+   ========================================================================== */
+
+.zsb-notice {
+  position: relative;
+  padding: 12px 34px 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 11px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-left: 2px solid var(--zd-gold-dark);
+  background: rgba(255,255,255,.028);
+}
+
+.zsb-notice.pinned {
+  border-left-color: var(--zd-accent);
+  background: linear-gradient(100deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+}
+
+.zsb-nhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.zsb-nhead i { color: var(--zd-gold); font-size: var(--zt-sm); }
+.zsb-notice.pinned .zsb-nhead i { color: var(--zd-accent); }
+
+.zsb-ntime { font: 400 var(--zt-xs) var(--zm); letter-spacing: 1px; color: var(--zp-faint); }
+
+.zsb-nbody { font: 400 var(--zt-md)/1.55 var(--zf); color: var(--zp-text); }
+
+.zsb-ndismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--zp-faint);
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, color .15s, background .15s;
+}
+
+.zsb-notice:hover .zsb-ndismiss,
+.zsb-ndismiss:focus-visible { opacity: 1; }
+.zsb-ndismiss:hover { color: #e06060; background: rgba(255,255,255,.06); }
+
+/* ==========================================================================
+    14.  MESSAGES
+   ========================================================================== */
+
+.zsm-thread {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 11px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.zsm-thread:hover { background: rgba(255,255,255,.045); }
+.zsm-thread.unread { background: rgba(255,255,255,.03); }
+
+.zsm-tavatar,
+.zsm-tavatar-ph {
   width: 42px;
   height: 42px;
+  flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(200,160,48,.3);
+  border: 1px solid rgba(200,160,48,.24);
+}
+
+.zsm-tavatar-ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.05);
+  color: var(--zp-faint);
+  font-size: 15px;
+}
+
+.zsm-thread.unread .zsm-tavatar,
+.zsm-thread.unread .zsm-tavatar-ph {
+  border-color: var(--zd-accent);
+  box-shadow: 0 0 12px -3px var(--zd-accent);
+}
+
+.zsm-tinfo { flex: 1; min-width: 0; }
+
+.zsm-tname {
+  font: 500 var(--zt-lg) var(--zf);
+  color: var(--zp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsm-thread.unread .zsm-tname { font-weight: 600; color: #eaf6f7; }
+.zsm-tmute { color: var(--zp-faint); font-size: var(--zt-xs); margin-left: 4px; }
+
+.zsm-tpreview {
+  font: 400 var(--zt-base) var(--zf);
+  color: var(--zp-faint);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsm-tmeta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.zsm-ttime { font: 400 var(--zt-xs) var(--zm); color: var(--zp-faint); }
+
+.zsm-tunread {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--zd-accent);
+  color: #04161a;
+  font: 700 var(--zt-sm)/18px var(--zf);
+  text-align: center;
+}
+
+/* --- thread header --- */
+
+.zsm-thead { flex: 1; display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+.zsm-thimg {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--zd-accent);
   flex-shrink: 0;
 }
 
+.zsm-thtext { min-width: 0; }
+
 .zsm-thname {
-  font: 700 16px var(--zf);
-  color: var(--ztd);
+  font: 600 var(--zt-lg) var(--zf);
+  color: var(--zp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.zsm-thsub {
-  font: 10px var(--zf);
-  color: var(--ztl);
-  margin-left: auto;
-}
+.zsm-thsub { font: 400 var(--zt-xs) var(--zm); letter-spacing: .8px; color: var(--zp-faint); }
+
+/* --- message list --- */
 
 .zsm-msglist {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding-bottom: 8px;
+  gap: 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(76,184,192,.3) transparent;
-  min-height: 0;
+  scrollbar-color: rgba(200,160,48,.3) transparent;
 }
 
-.zsm-msglist::-webkit-scrollbar {
-  width: 3px;
+.zsm-msglist > :first-child { margin-top: auto; }
+
+.zsm-msglist::-webkit-scrollbar { width: 6px; }
+.zsm-msglist::-webkit-scrollbar-thumb { background: rgba(200,160,48,.28); border-radius: 3px; }
+
+.zsm-daysep {
+  align-self: center;
+  margin: 12px -1.4px 8px 0;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.05);
+  font: 500 var(--zt-xs) var(--zm);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--zp-faint);
 }
 
-.zsm-msglist::-webkit-scrollbar-thumb {
-  background: rgba(76,184,192,.3);
-  border-radius: 3px;
+.zsm-msg {
+  max-width: 80%;
+  align-self: flex-start;
+  padding: 8px 12px 6px;
+  border-radius: 14px 14px 14px 4px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.05);
+  animation: zsmsg .22s ease both;
 }
+
+.zsm-msg.zsm-sent {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: linear-gradient(140deg, var(--zd-accent-deep),
+              color-mix(in srgb, var(--zd-accent-deep) 55%, transparent));
+  border-color: rgba(255,255,255,.08);
+}
+
+@keyframes zsmsg {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.zsm-mfrom {
+  font: 600 var(--zt-xs) var(--zm);
+  letter-spacing: .8px;
+  color: var(--zd-gold);
+  margin-bottom: 3px;
+}
+
+.zsm-mbody {
+  font: 400 var(--zt-md)/1.5 var(--zf);
+  color: var(--zp-text);
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.zsm-mimg {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.zsm-mtime {
+  font: 400 var(--zt-xs) var(--zm);
+  color: var(--zp-faint);
+  text-align: right;
+  margin-top: 3px;
+  opacity: .75;
+}
+
+/* On a sent bubble the fill is a saturated accent, so the grey vanishes. */
+.zsm-sent .zsm-mtime { color: #eaf6f7; opacity: .6; }
+
+/* --- composer --- */
 
 .zsm-reply {
   flex-shrink: 0;
   display: flex;
-  gap: 6px;
-  align-items: center;
-  padding-top: 8px;
-  border-top: 1px solid rgba(0,0,0,.06);
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(200,160,48,.1);
 }
 
 .zsm-replyinput {
   flex: 1;
-  background: rgba(0,0,0,.04);
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 16px;
-  padding: 7px 14px;
-  font: 12px var(--zf);
-  color: var(--ztd);
-  outline: none;
+  min-width: 0;
+  padding: 9px 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 20px;
+  background: rgba(0,0,0,.28);
+  color: var(--zp-text);
+  font: 400 var(--zt-md) var(--zf);
+  transition: border-color .15s;
 }
 
-.zsm-replyinput:focus {
-  border-color: rgba(200,160,48,.3);
-  background: rgba(0,0,0,.06);
-}
-
-.zsm-replyinput::placeholder {
-  color: var(--ztl);
-  opacity: .5;
-}
+.zsm-replyinput::placeholder { color: var(--zp-faint); }
+.zsm-replyinput:focus { border-color: var(--zd-accent); outline: none; }
 
 .zsm-sendbtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg,var(--zd-gold-dark),var(--zd-gold));
-  color: #1a1a1a;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: filter .1s;
-}
-
-.zsm-sendbtn:hover {
-  filter: brightness(1.15);
-}
-
-.zsm-thread {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 8px 10px;
-  background: rgba(0,0,0,.04);
-  border-radius: 10px;
-  margin-bottom: 5px;
-  border: 1px solid rgba(0,0,0,.04);
-  cursor: pointer;
-  transition: background .1s;
-}
-
-.zsm-thread:hover {
-  background: rgba(0,0,0,.08);
-}
-
-.zsm-tavatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(200,160,48,.25);
   flex-shrink: 0;
-}
-
-.zsm-tavatar-ph {
-  width: 36px;
-  height: 36px;
+  border: 0;
   border-radius: 50%;
-  border: 2px solid rgba(0,0,0,.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ztl);
+  background: var(--zd-accent);
+  color: #04161a;
   font-size: 13px;
-  background: rgba(0,0,0,.04);
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
 }
 
-.zsm-tinfo {
-  flex: 1;
-  min-width: 0;
-}
+.zsm-sendbtn:hover { transform: scale(1.08); box-shadow: 0 0 14px -2px var(--zd-accent); }
 
-.zsm-tname {
-  font: 600 12px var(--zf);
-  color: var(--ztd);
+/*
+ * The aether warning.
+ *
+ * This is what is left of the status bar's signal meter, and it is better for
+ * being smaller: the meter said something on every screen at all times, and the
+ * only state worth reading was "no GM connected, so a message to another
+ * student will not arrive". Shown here, on the screen where that matters, and
+ * only when it is true.
+ */
+.zsm-aether {
   display: flex;
   align-items: center;
-  gap: 5px;
-}
-
-.zsm-tunread {
-  background: #e03030;
-  color: #fff;
-  font: 700 8px/1 var(--zf);
-  padding: 2px 5px;
-  border-radius: 8px;
-}
-
-.zsm-tpreview {
-  font: 11px var(--zf);
-  color: var(--ztl);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
-}
-
-.zsm-ttime {
-  font: 9px var(--zf);
-  color: var(--ztl);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.zsm-broadcasts {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-bottom: 10px;
-}
-
-.zsm-broadcast {
-  font: 11px var(--zf);
-  color: var(--ztd);
-  background: rgba(200,160,48,.06);
-  border: 1px solid rgba(200,160,48,.12);
-  border-radius: 8px;
-  padding: 6px 8px;
-}
-
-.zsm-broadcast i {
-  color: var(--zgo);
-  margin-right: 3px;
-}
-
-.zsm-msg {
-  background: rgba(0,0,0,.04);
+  gap: 9px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
   border-radius: 10px;
-  padding: 8px 12px;
-  border: 1px solid rgba(0,0,0,.04);
-  max-width: 80%;
+  border: 1px solid rgba(208,128,64,.32);
+  background: rgba(208,128,64,.08);
+  font: 400 var(--zt-base)/1.4 var(--zf);
+  color: #e0b090;
 }
 
-.zsm-sent {
-  align-self: flex-end;
-  background: rgba(200,160,48,.08);
-  border-color: rgba(200,160,48,.12);
-}
+.zsm-aether i { flex-shrink: 0; color: #d08040; font-size: var(--zt-md); }
 
-.zsm-mfrom {
-  font: 600 9px var(--zf);
-  color: var(--zgo);
-  margin-bottom: 2px;
-  letter-spacing: .5px;
-}
-
-.zsm-mbody {
-  font: 12px/1.5 var(--zf);
-  color: var(--ztm);
-}
-
-.zsm-mimg {
-  max-width: 100%;
-  max-height: 180px;
-  border-radius: 6px;
-  margin-top: 6px;
-  cursor: pointer;
-  transition: opacity .1s;
-}
-
-.zsm-mimg:hover {
-  opacity: .85;
-}
-
-.zsm-mtime {
-  font: 9px var(--zf);
-  color: var(--ztl);
-  text-align: right;
-  margin-top: 3px;
-}
-
-.zsm-pm-btn {
-  font: 500 11px var(--zf);
-  color: var(--zgo);
-  cursor: pointer;
-  padding: 8px 12px;
-  background: rgba(200,160,48,.06);
-  border: 1px dashed rgba(200,160,48,.2);
-  border-radius: 8px;
-  margin-bottom: 10px;
-  text-align: center;
-  transition: background .1s;
-}
-
-.zsm-pm-btn:hover {
-  background: rgba(200,160,48,.12);
-}
+/* --- new conversation picker --- */
 
 .zsm-picker {
-  background: rgba(0,0,0,.06);
-  border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(0,0,0,.06);
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 56px;
+  z-index: 7;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--zp-line);
+  background: #0b1a21;
+  box-shadow: 0 12px 34px rgba(0,0,0,.6);
+  animation: zsvInX .16s ease both;
 }
 
 .zsm-picker-title {
-  font: 600 10px var(--zf);
-  letter-spacing: 1px;
+  font: 600 var(--zt-xs) var(--zm);
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--ztl);
-  margin-bottom: 6px;
+  color: var(--zp-faint);
+  padding: 4px 6px 8px;
 }
 
 .zsm-picker-row {
   display: flex;
-  gap: 8px;
   align-items: center;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: background .1s;
+  transition: background .14s;
 }
 
-.zsm-picker-row:hover {
-  background: rgba(200,160,48,.08);
-}
+.zsm-picker-row:hover { background: rgba(255,255,255,.06); }
 
 .zsm-picker-img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid rgba(200,160,48,.2);
-}
-
-.zsm-picker-name {
-  font: 500 12px var(--zf);
-  color: var(--ztd);
-}
-
-.zsm-picker-cancel {
-  font: 400 10px var(--zf);
-  color: var(--ztl);
-  cursor: pointer;
-  text-align: center;
-  padding: 4px;
-  margin-top: 4px;
-}
-
-/* ==========================================================================
-   10.  GALLERY TAB
-   ========================================================================== */
-
-.zsx-grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 6px;
-}
-
-.zsx-item {
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0,0,0,.04);
-  border: 1px solid rgba(0,0,0,.04);
-  cursor: pointer;
-  transition: transform .15s,box-shadow .15s;
-}
-
-.zsx-item:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0,0,0,.12);
-}
-
-.zsx-item img {
-  width: 100%;
-  aspect-ratio: 4/3;
-  object-fit: cover;
-  display: block;
-}
-
-.zsx-cap {
-  font: 10px var(--zf);
-  color: var(--ztm);
-  padding: 5px 6px;
-  text-align: center;
-}
-
-/* ==========================================================================
-   11.  LIGHTBOX OVERLAY
-   ========================================================================== */
-
-#zs-lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,.85);
-  backdrop-filter: blur(4px);
-  animation: zsfin .15s;
-  cursor: pointer;
-}
-
-.zslb-wrap {
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  cursor: default;
-}
-
-.zslb-close {
-  position: absolute;
-  top: -12px;
-  right: -12px;
   width: 30px;
   height: 30px;
-  background: #fff;
-  color: #333;
-  font-size: 18px;
-  font-weight: 300;
   border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(200,160,48,.24);
+}
+
+.zsm-picker-name { font: 500 var(--zt-md) var(--zf); color: var(--zp-text); }
+
+/* --- attachments --- */
+
+/*
+ * The image queued on the composer.
+ *
+ * Above the reply row rather than inside it: the row is a fixed-height strip
+ * tuned around a 36px send button, and a thumbnail in it either squashes the
+ * input or pushes the whole strip taller than the thread it sits under.
+ */
+.zsm-attach {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  gap: 9px;
+  margin: 0 14px;
+  padding: 7px 9px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--zd-accent) 8%, transparent);
 }
 
-.zslb-img {
-  max-width: 90vw;
-  max-height: 82vh;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+.zsm-attach-img {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
-.zslb-cap {
-  text-align: center;
-  font: 13px var(--zf);
-  color: #d0d0d0;
-  margin-top: 10px;
-}
-
-/* ==========================================================================
-   12.  GM COMMAND CENTER
-   ========================================================================== */
-
-#zs-gm {
-  position: fixed;
-  inset: 0;
-  z-index: 210;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(2px);
-  animation: zsfin .2s;
-}
-
-.zg-panel {
-  width: 680px;
-  max-width: 94vw;
-  max-height: 88vh;
-  background: #12191f;
-  border: 1px solid rgba(200,160,48,.12);
-  border-radius: 12px;
-  box-shadow: 0 16px 48px rgba(0,0,0,.6);
-  display: flex;
-  flex-direction: column;
+.zsm-attach-cap {
+  flex: 1;
+  min-width: 0;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-dim);
+  white-space: nowrap;
   overflow: hidden;
-  color: #c8d0d0;
-  font-family: var(--zf);
-  animation: zspin .25s ease;
+  text-overflow: ellipsis;
 }
 
-.zg-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #0e1418;
-  border-bottom: 1px solid rgba(200,160,48,.15);
-}
-
-.zg-title {
-  font: 600 13px var(--zf);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--zd-gold);
+.zsm-attach-x {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-}
-
-.zg-actsel {
-  flex: 1;
-  background: #12191f;
-  border: 1px solid #2a3840;
-  color: #c8d0d0;
-  font: 13px var(--zf);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.zg-close {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #5a7078;
-  cursor: pointer;
+  border: 0;
   border-radius: 50%;
-  transition: background .1s;
-}
-
-.zg-close:hover {
-  background: rgba(255,255,255,.08);
-  color: #a0b0b0;
-}
-
-.zg-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 8px 12px;
-  background: #0e1418;
-  border-bottom: 1px solid #2a3840;
-  flex-wrap: wrap;
-}
-
-.zg-tab {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: #5a7078;
-  font: 500 10px var(--zf);
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  background: none;
+  color: var(--zp-faint);
   cursor: pointer;
-  transition: all .1s;
+  transition: color .15s, background .15s;
 }
 
-.zg-tab:hover {
-  background: rgba(255,255,255,.05);
-  color: #a0b0b0;
+.zsm-attach-x:hover { color: #e08080; background: rgba(224,96,96,.12); }
+
+.zsm-clipbtn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 50%;
+  background: rgba(0,0,0,.28);
+  color: var(--zp-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
 }
 
-.zg-tab.active {
-  background: rgba(200,160,48,.12);
-  color: var(--zd-gold);
+.zsm-clipbtn:hover { color: var(--zd-accent); border-color: var(--zd-accent); }
+
+/* The gallery picker reuses the conversation picker's shell and its own grid. */
+.zsm-gpicker { max-height: 60%; overflow-y: auto; }
+.zsm-gpicker .zsx-grid { margin-bottom: 8px; }
+
+.zsm-picker-row.on {
+  background: color-mix(in srgb, var(--zd-accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px var(--zd-accent);
 }
 
-.zg-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  scrollbar-width: thin;
-  scrollbar-color: #2a3840 transparent;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.zsm-picker-tick { margin-left: auto; color: var(--zd-accent); opacity: 0; transition: opacity .14s; }
+.zsm-picker-row.on .zsm-picker-tick { opacity: 1; }
 
-.zg-body::-webkit-scrollbar {
-  width: 4px;
-}
 
-.zg-body::-webkit-scrollbar-thumb {
-  background: #2a3840;
-  border-radius: 4px;
-}
-
-.zg-row {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.zg-row label {
-  font: 600 10px var(--zf);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--zd-gold-dark);
-}
-
-.zg-row input,
-.zg-row select,
-.zg-row textarea {
-  background: rgba(255,255,255,.04);
-  border: 1px solid #2a3840;
-  color: #c8d0d0;
-  font: 13px var(--zf);
-  padding: 6px 8px;
-  border-radius: 4px;
+.zsm-picker-cancel {
   width: 100%;
-  box-sizing: border-box;
-}
-
-.zg-row input:focus,
-.zg-row select:focus,
-.zg-row textarea:focus {
-  border-color: var(--zd-gold);
-  outline: none;
-}
-
-.zg-sub {
-  font: 600 10px var(--zf);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--zd-gold);
-  margin-top: 4px;
-}
-
-.zg-hint {
-  font: 12px var(--zf);
-  color: #4a6068;
-  padding: 4px 0;
-}
-
-.zg-divider {
-  height: 1px;
-  background: #2a3840;
-  margin: 6px 0;
-}
-
-.zg-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font: 12px var(--zf);
-  color: #8a9898;
-  padding: 4px 0;
-}
-
-.zg-check input[type="checkbox"] {
-  accent-color: var(--zd-gold);
-}
-
-.zg-arr {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.zg-arow {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.zg-arow-wrap {
-  flex-wrap: wrap;
-}
-
-.zg-arow input {
-  background: rgba(255,255,255,.04);
-  border: 1px solid #2a3840;
-  color: #c8d0d0;
-  font: 12px var(--zf);
-  padding: 5px 6px;
-  border-radius: 3px;
-  flex: 1;
-  min-width: 70px;
-  box-sizing: border-box;
-}
-
-.zg-arow input:focus {
-  border-color: var(--zd-gold);
-  outline: none;
-}
-
-.zg-arow select {
-  background: rgba(255,255,255,.04);
-  border: 1px solid #2a3840;
-  color: #c8d0d0;
-  font: 12px var(--zf);
-  padding: 5px 4px;
-  border-radius: 3px;
-  min-width: 100px;
-}
-
-.zg-rm {
-  background: transparent;
-  border: 1px solid rgba(200,60,60,.3);
-  color: #c04040;
-  padding: 4px 7px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 10px;
-  flex-shrink: 0;
-}
-
-.zg-rm:hover {
-  background: rgba(200,60,60,.15);
-}
-
-.zg-tog {
-  background: transparent;
-  border: 1px solid #2a3840;
-  padding: 4px 8px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.zg-tog:hover {
-  background: rgba(255,255,255,.05);
-}
-
-.zg-add {
-  background: rgba(200,160,48,.06);
-  border: 1px dashed rgba(200,160,48,.25);
-  color: var(--zd-gold);
+  margin-top: 6px;
   padding: 7px;
-  border-radius: 4px;
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,.06);
+  background: none;
+  color: var(--zp-faint);
+  font: 500 var(--zt-base) var(--zf);
   cursor: pointer;
-  font: 11px var(--zf);
-  margin-top: 4px;
-  text-align: center;
 }
 
-.zg-add:hover {
-  background: rgba(200,160,48,.12);
-}
-
-.zg-save {
-  background: linear-gradient(135deg,var(--zd-gold-dark),var(--zd-gold));
-  border: none;
-  color: #1a1a1a;
-  font: 700 12px var(--zf);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 10px 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  align-self: flex-end;
-  margin-top: 8px;
-}
-
-.zg-save:hover {
-  filter: brightness(1.1);
-}
-
-.zg-send {
-  background: linear-gradient(135deg,var(--zd-gold-dark),var(--zd-gold));
-  border: none;
-  color: #1a1a1a;
-  font: 600 11px var(--zf);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  align-self: flex-start;
-  margin-top: 4px;
-}
-
-.zg-send:hover {
-  filter: brightness(1.1);
-}
-
-/* ---- VN Relationship Panel ---- */
+.zsm-picker-cancel:hover { color: var(--zp-text); }
 
 /* ==========================================================================
-   13.  VN RELATIONSHIP PANEL
+    15.  CONTACTS  (visual-novel panel)
    ========================================================================== */
 
 .zsr-vn-cat {
-  font: 600 9px var(--zf);
-  letter-spacing: 2px;
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.4px;
   text-transform: uppercase;
-  color: var(--zgo);
-  margin-top: 12px;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(200,160,48,.12);
+  color: var(--zd-gold-dark);
+  margin: 14px 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(200,160,48,.14);
 }
 
+.zsr-vn-cat:first-child { margin-top: 0; }
+
 .zsr-vn-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-start;
-  padding: 4px 0 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 10px;
+  margin-bottom: 6px;
 }
 
 .zsr-vn-circle {
@@ -1802,351 +2238,2530 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
   cursor: pointer;
-  transition: transform .15s;
+  transition: transform .18s cubic-bezier(.34,1.4,.64,1);
 }
 
-.zsr-vn-circle:hover {
-  transform: translateY(-3px);
-}
+.zsr-vn-circle:hover { transform: translateY(-3px); }
 
-.zsr-vn-circle:hover .zsr-vn-tip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
-.zsr-vn-img {
-  width: 58px;
-  height: 58px;
+.zsr-vn-img,
+.zsr-vn-ph {
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2.5px solid var(--rel-color,#808080);
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 0 12px var(--rel-glow,transparent);
-  transition: border-color .3s,box-shadow .3s;
-}
-
-.zsr-vn-circle:hover .zsr-vn-img {
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 0 18px var(--rel-glow,rgba(128,128,128,.3));
+  border: 2px solid var(--rel-color, #808080);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 0 14px -4px var(--rel-glow, transparent);
+  transition: box-shadow .18s;
 }
 
 .zsr-vn-ph {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  border: 2.5px solid var(--rel-color,#808080);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ztl);
-  font-size: 18px;
-  background: rgba(0,0,0,.06);
-  box-shadow: 0 0 12px var(--rel-glow,transparent);
+  background: rgba(255,255,255,.05);
+  color: var(--zp-faint);
+  font-size: 21px;
+}
+
+.zsr-vn-circle:hover .zsr-vn-img,
+.zsr-vn-circle:hover .zsr-vn-ph {
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 0 20px -2px var(--rel-glow, transparent);
 }
 
 .zsr-vn-cname {
-  font: 500 9px var(--zf);
-  color: var(--ztd);
+  font: 500 var(--zt-sm) var(--zf);
+  color: var(--zp-dim);
   text-align: center;
-  max-width: 64px;
+  max-width: 100%;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .zsr-vn-online {
   position: absolute;
-  top: 2px;
-  right: 8px;
-  width: 10px;
-  height: 10px;
+  top: 46px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: #40c040;
-  border: 2px solid var(--zd-screen);
-  box-shadow: 0 0 6px rgba(64,192,64,.4);
+  background: #40d080;
+  border: 2px solid var(--zp-panel);
+  box-shadow: 0 0 8px #40d080;
 }
 
-/* Hover Tooltip */
+/* --- hover tooltip --- */
 
-.zsr-vn-tip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background: linear-gradient(135deg,#1a2830,#12191f);
-  border: 1px solid rgba(200,160,48,.2);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: #c8d0d0;
-  font-family: var(--zf);
-  box-shadow: 0 6px 20px rgba(0,0,0,.5);
-  z-index: 20;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity .15s,transform .15s,visibility .15s;
-  pointer-events: none;
+/*
+ * The tooltip box itself is `.zsu-tip` in section 5, parented to <body>.
+ *
+ * It used to be a child of the circle at `bottom: calc(100% + 8px)`, escaping
+ * upward -- straight into `.zsu-scroller`, which is `overflow-y: auto;
+ * overflow-x: hidden` and therefore clips on both axes. The top row of every
+ * category lost its tooltip to the top edge and the outer columns lost theirs
+ * sideways. Only the rank/title/status typography lives here now.
+ */
+.zsu-tip .zsr-vn-tip-name { font: 600 var(--zt-md) var(--zf); color: var(--zp-text); }
+.zsu-tip .zsr-vn-tip-title { font: 400 var(--zt-sm) var(--zf); color: var(--zp-faint); margin-top: 2px; }
+.zsu-tip .zsr-vn-tip-rank { font: 600 var(--zt-sm) var(--zm); letter-spacing: 1px; margin-top: 5px; }
+
+.zsu-tip .zsr-vn-tip-status {
+  font: 400 var(--zt-sm) var(--zf);
+  font-style: italic;
+  color: var(--zp-dim);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.07);
 }
 
-.zsr-vn-tip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #1a2830;
-}
+.zsu-tip .zsr-vn-tip-status i { font-size: var(--zt-2xs); color: var(--zd-accent); margin-right: 4px; }
 
-.zsr-vn-tip-name {
-  font: 600 12px var(--zf);
-  color: #e0e4e4;
-}
-
-.zsr-vn-tip-title {
-  font: 10px var(--zf);
-  color: #6a8090;
-  margin-top: 1px;
-}
-
-.zsr-vn-tip-rank {
-  font: 600 10px var(--zf);
-  letter-spacing: .5px;
-  margin-top: 3px;
-}
-
-.zsr-vn-tip-status {
-  font: 10px var(--zf);
-  color: #8a9898;
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.zsr-vn-tip-status i {
-  font-size: 8px;
-  color: var(--zgo);
-}
-
-/* Detail View */
-
-.zsr-vn-detail {
-  opacity: 0;
-  transform: translateX(12px);
-  transition: opacity .25s ease,transform .25s ease;
-}
-
-.zsr-vn-detail.zsr-vn-in {
-  opacity: 1;
-  transform: none;
-}
-
-.zsr-vn-back {
-  font: 500 11px var(--zf);
-  color: var(--zgo);
-  cursor: pointer;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: color .1s;
-}
-
-.zsr-vn-back:hover {
-  color: var(--ztd);
-}
+/* --- detail panel --- */
 
 .zsr-vn-card {
   display: flex;
   gap: 14px;
-  align-items: flex-start;
-  padding: 12px;
-  background: rgba(0,0,0,.05);
-  border-radius: 12px;
-  border: 1px solid rgba(200,160,48,.1);
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
-.zsr-vn-portrait {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 3px solid var(--rel-color,#808080);
-  box-shadow: 0 0 16px var(--rel-color,transparent);
-  cursor: pointer;
-  transition: box-shadow .3s;
-}
+.zsr-vn-portrait { flex-shrink: 0; }
 
-.zsr-vn-portrait:hover {
-  box-shadow: 0 0 24px var(--rel-color,transparent);
-}
-
-.zsr-vn-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.zsr-vn-pbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
   display: block;
 }
 
+.zsr-vn-portrait img,
 .zsr-vn-portrait-ph {
-  width: 100%;
-  height: 100%;
+  width: 96px;
+  height: 118px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--rel-color, #808080);
+  box-shadow: 0 4px 18px rgba(0,0,0,.5);
+}
+
+.zsr-vn-portrait-ph {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255,255,255,.05);
+  color: var(--zp-faint);
   font-size: 28px;
-  color: var(--ztl);
-  background: rgba(0,0,0,.06);
 }
 
-.zsr-vn-dinfo {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+.zsr-vn-dinfo { flex: 1; min-width: 0; }
 
-.zsr-vn-dname {
-  font: 700 18px var(--zf);
-  color: var(--ztd);
-}
+.zsr-vn-dname { font: 600 var(--zt-xl) var(--zf); color: #eaf6f7; }
 
 .zsr-vn-dtitle {
-  font: 11px var(--zf);
-  color: var(--ztl);
+  font: 400 var(--zt-base) var(--zf);
+  letter-spacing: .8px;
+  color: var(--zd-gold-dark);
+  margin-top: 2px;
 }
 
-.zsr-vn-dbar-wrap {
-  margin-top: 4px;
-}
+.zsr-vn-dbar-wrap { margin-top: 12px; }
 
 .zsr-vn-dbar {
   position: relative;
-  height: 6px;
-  background: linear-gradient(90deg,#a02020 0%,#b07060 25%,#808080 50%,#509050 75%,#d4940a 100%);
+  height: 5px;
   border-radius: 3px;
+  background: linear-gradient(90deg,
+    #a02020, #c03030, #d05040, #b07060, #908070,
+    #808080, #6a8870, #509050, #40a060, #c0a030, #d4940a);
 }
 
 .zsr-vn-dmarker {
   position: absolute;
   top: 50%;
-  width: 12px;
-  height: 12px;
-  background: #fff;
-  border: 2px solid #1a1a1a;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
+  background: #fff;
   transform: translate(-50%,-50%);
-  box-shadow: 0 1px 4px rgba(0,0,0,.3);
-  transition: left .4s ease;
+  box-shadow: 0 0 8px rgba(255,255,255,.8), 0 1px 4px rgba(0,0,0,.6);
+  transition: left .45s cubic-bezier(.34,1.4,.64,1);
 }
 
 .zsr-vn-drank {
-  font: 600 11px var(--zf);
-  letter-spacing: .5px;
-  margin-top: 4px;
+  font: 600 var(--zt-base) var(--zm);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-top: 8px;
 }
 
 .zsr-vn-dstatus {
-  font: 11px var(--zf);
-  color: #8a9898;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font: 400 var(--zt-base) var(--zf);
+  font-style: italic;
+  color: var(--zp-dim);
+  margin-top: 10px;
 }
 
-.zsr-vn-dstatus i {
-  font-size: 9px;
-  color: var(--zgo);
-}
+.zsr-vn-dstatus i { font-size: var(--zt-xs); color: var(--zd-accent); margin-right: 5px; }
 
 .zsr-vn-donline {
-  font: 600 9px var(--zf);
-  letter-spacing: 1px;
+  display: inline-block;
+  margin-top: 9px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font: 600 var(--zt-xs) var(--zm);
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-top: 4px;
-  width: fit-content;
 }
 
 .zsr-vn-donline.on {
-  background: rgba(64,192,64,.12);
-  color: #40c040;
-  border: 1px solid rgba(64,192,64,.2);
+  background: rgba(64,208,128,.14);
+  color: #40d080;
+  border: 1px solid rgba(64,208,128,.3);
 }
 
 .zsr-vn-donline.off {
-  background: rgba(128,128,128,.1);
-  color: #808080;
-  border: 1px solid rgba(128,128,128,.15);
+  background: rgba(255,255,255,.04);
+  color: var(--zp-faint);
+  border: 1px solid rgba(255,255,255,.07);
 }
-
-/* History & Notes */
 
 .zsr-vn-slabel {
-  font: 600 8px var(--zf);
-  letter-spacing: 2px;
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.2px;
   text-transform: uppercase;
-  color: var(--zgo);
-  margin-bottom: 5px;
-}
-
-.zsr-vn-hsec {
-  padding: 10px 12px;
-  background: rgba(0,0,0,.03);
-  border-radius: 8px;
+  color: var(--zp-faint);
   margin-bottom: 8px;
 }
 
+.zsr-vn-hsec { margin-bottom: 16px; }
+
 .zsr-vn-hentry {
-  font: 11px/1.5 var(--zf);
-  color: var(--ztm);
-  padding: 3px 0 3px 10px;
-  border-left: 2px solid rgba(200,160,48,.15);
-  margin-bottom: 3px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  border-left: 2px solid var(--zd-gold-dark);
+  background: rgba(255,255,255,.028);
+  font: 400 var(--zt-base)/1.5 var(--zf);
+  color: var(--zp-dim);
 }
 
-.zsr-vn-nsec {
-  padding: 10px 12px;
-  background: rgba(0,0,0,.03);
-  border-radius: 8px;
-}
+.zsr-vn-nsec { margin-bottom: 8px; }
 
 .zsr-vn-notes {
   width: 100%;
-  box-sizing: border-box;
-  background: rgba(0,0,0,.04);
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font: 12px/1.5 var(--zf);
-  color: var(--ztd);
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 9px;
+  background: rgba(0,0,0,.28);
+  color: var(--zp-text);
+  font: 400 var(--zt-md)/1.55 var(--zf);
   resize: vertical;
-  min-height: 60px;
-  outline: none;
+  min-height: 76px;
   transition: border-color .15s;
 }
 
-.zsr-vn-notes:focus {
-  border-color: rgba(200,160,48,.3);
-  background: rgba(0,0,0,.06);
-}
-
-.zsr-vn-notes::placeholder {
-  color: var(--ztl);
-  opacity: .5;
-}
+.zsr-vn-notes::placeholder { color: var(--zp-faint); }
+.zsr-vn-notes:focus { border-color: var(--zd-accent); outline: none; }
 
 .zsr-vn-nhint {
-  font: 9px var(--zf);
-  color: var(--ztl);
-  opacity: .5;
-  margin-top: 4px;
+  font: 400 var(--zt-xs) var(--zm);
+  letter-spacing: .8px;
+  color: var(--zp-faint);
+  margin-top: 5px;
   text-align: right;
 }
+
+/* ==========================================================================
+    16.  GALLERY
+   ========================================================================== */
+
+.zsx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.zsx-item {
+  position: relative;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,.03);
+  cursor: zoom-in;
+  aspect-ratio: 1;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+
+.zsx-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--zd-accent);
+  box-shadow: 0 0 18px -6px var(--zd-accent);
+}
+
+.zsx-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/*
+ * Who sent it.
+ *
+ * Top-left, opposite the caption's bottom strip, so a shared image with a
+ * caption shows both without either sitting on the other.
+ */
+.zsx-from {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,.8), transparent);
+  font: 500 var(--zt-2xs) var(--zf);
+  color: var(--zd-accent-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.zsx-from i { margin-right: 4px; }
+
+.zsx-cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 6px 4px;
+  background: linear-gradient(0deg, rgba(0,0,0,.85), transparent);
+  font: 400 var(--zt-xs) var(--zf);
+  color: #d0dcdc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+    16b.  NOTES  (a journal, wearing the scroll's clothes)
+   ========================================================================== */
+
+.zsq-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: 7px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 11px;
+  background: rgba(255,255,255,.02);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s, background .16s;
+}
+
+.zsq-row:hover { border-color: var(--zd-accent); background: rgba(255,255,255,.05); }
+
+.zsq-rbody { flex: 1; min-width: 0; }
+
+.zsq-rname {
+  font: 500 var(--zt-md) var(--zf);
+  color: var(--zp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsq-rprev {
+  margin-top: 2px;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsq-rmeta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zsq-rich { color: var(--zd-gold); font-size: 12px; }
+
+.zsq-rtime { font: 400 var(--zt-xs) var(--zm); color: var(--zp-faint); }
+
+.zsq-pop {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--zp-line);
+  border-radius: 10px;
+  background: rgba(200,160,48,.06);
+  color: var(--zd-gold-light);
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.zsq-pop:hover { background: rgba(200,160,48,.14); border-color: var(--zd-gold); }
+
+.zsq-title { margin-bottom: 10px; font-weight: 500; }
+
+/*
+ * The editor.
+ *
+ * A textarea rather than a rich editor on purpose — see notes.mjs. `resize:
+ * vertical` is deliberate too: horizontal resize inside a 480px column can only
+ * make things worse, and `none` would leave a long note trapped in twelve rows.
+ */
+.zsq-body {
+  width: 100%;
+  min-height: 240px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 10px;
+  background: rgba(0,0,0,.28);
+  color: var(--zp-text);
+  font: 400 var(--zt-md)/var(--zt-lh) var(--zf);
+  resize: vertical;
+  transition: border-color .15s;
+}
+
+.zsq-body::placeholder { color: var(--zp-faint); }
+.zsq-body:focus { border-color: var(--zd-accent); outline: none; }
+.zsq-body:disabled, .zsq-title:disabled { opacity: .8; cursor: default; }
+
+.zsq-state {
+  margin-top: 6px;
+  min-height: 1.2em;
+  text-align: right;
+  font: 400 var(--zt-xs) var(--zm);
+  color: var(--zp-faint);
+}
+
+.zsq-locked {
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--zp-line);
+  border-radius: 9px;
+  background: rgba(200,160,48,.05);
+  font: 400 var(--zt-sm)/var(--zt-lh) var(--zf);
+  color: var(--zd-gold-light);
+}
+
+.zsq-locked i { margin-right: 6px; }
+
+/* --- the two notebooks --- */
+
+/*
+ * A segmented control rather than the app bar's tabs: there are exactly two of
+ * these and they are peers, so the choice should read as one control with a
+ * lit half rather than as navigation.
+ */
+.zsq-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  flex-shrink: 0;
+  margin: 0 16px 12px;
+  padding: 4px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  background: rgba(0,0,0,.26);
+}
+
+.zsq-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--zp-dim);
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .16s, color .16s, box-shadow .16s;
+}
+
+.zsq-tab:hover { color: var(--zp-text); background: rgba(255,255,255,.04); }
+
+.zsq-tab.on {
+  color: var(--zd-accent-bright);
+  background: color-mix(in srgb, var(--zd-accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1px var(--zd-accent);
+}
+
+.zsq-tabicon { font-size: 12px; opacity: .85; }
+.zsq-tabname { letter-spacing: .3px; }
+
+.zsq-tabcount {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  background: rgba(255,255,255,.09);
+  font: 500 var(--zt-2xs) var(--zm);
+  color: var(--zp-dim);
+}
+
+.zsq-tab.on .zsq-tabcount {
+  background: color-mix(in srgb, var(--zd-accent) 30%, transparent);
+  color: var(--zd-accent-bright);
+}
+
+/* Who wrote it, in front of the preview, on a party note. */
+.zsq-rby {
+  margin-right: 6px;
+  color: var(--zd-accent);
+  font-weight: 500;
+}
+
+.zsq-rby::after { content: " ·"; color: var(--zp-faint); font-weight: 400; }
+
+.zsq-rgo { color: var(--zp-faint); font-size: 11px; }
+
+.zsq-byline {
+  margin: -4px 0 10px;
+  font: 400 var(--zt-xs) var(--zf);
+  color: var(--zp-faint);
+}
+
+/* --- photos still in the darkroom --- */
+
+/*
+ * The tile is the photograph, washed out and desaturated rather than replaced by
+ * a grey box: it is already in memory, and showing it is both a better
+ * placeholder and an honest preview of what is about to land.
+ */
+.zsx-dev { cursor: default; }
+
+.zsx-dev img {
+  filter: grayscale(.7) brightness(.5) blur(1px);
+  transition: filter .3s;
+}
+
+.zsx-dev::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%,
+              color-mix(in srgb, var(--zd-accent) 22%, transparent) 50%, transparent 70%);
+  background-size: 260% 100%;
+  animation: zsdev 1.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes zsdev {
+  from { background-position: 160% 0; }
+  to   { background-position: -60% 0; }
+}
+
+.zsx-devlabel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font: 500 var(--zt-2xs) var(--zm);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--zd-accent-bright);
+  text-shadow: 0 1px 4px rgba(0,0,0,.9);
+}
+
+.zsx-devspin {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--zd-accent) 35%, transparent);
+  border-top-color: var(--zd-accent-bright);
+  animation: zsspin .8s linear infinite;
+}
+
+@keyframes zsspin { to { transform: rotate(360deg); } }
+
+.zsx-devfail { cursor: pointer; border-color: rgba(224,96,96,.45); }
+.zsx-devfail::after { animation: none; background: rgba(40,10,10,.45); }
+.zsx-devfail .zsx-devlabel { color: #f0a0a0; }
+.zsx-devfail img { filter: grayscale(1) brightness(.32); }
+
+.zsc-out {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--zp-line);
+  border-radius: 9px;
+  background: rgba(200,160,48,.05);
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zd-gold-light);
+}
+
+/* ==========================================================================
+    16c.  CAMERA
+   ========================================================================== */
+
+.zsc-view {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 12px;
+  border: 1px solid var(--zp-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #030a0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zsc-shot { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* The empty viewfinder: four corner brackets and a lens, and nothing else. */
+.zsc-finder {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zp-faint);
+}
+
+.zsc-fi { font-size: 30px; opacity: .35; }
+
+.zsc-fc {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--zd-accent);
+  opacity: .5;
+}
+
+.zsc-tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 6px 0 0 0; }
+.zsc-tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 6px 0 0; }
+.zsc-bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 6px; }
+.zsc-br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 6px 0; }
+
+.zsc-shutter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--zd-accent) 12%, transparent);
+  color: var(--zd-accent-bright);
+  font: 600 var(--zt-md) var(--zf);
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background .16s, box-shadow .16s;
+}
+
+.zsc-shutter:hover {
+  background: color-mix(in srgb, var(--zd-accent) 22%, transparent);
+  box-shadow: 0 0 22px -8px var(--zd-accent);
+}
+
+.zsc-ring {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--zd-accent);
+  background: color-mix(in srgb, var(--zd-accent) 35%, transparent);
+}
+
+.zsc-row { display: flex; gap: 8px; margin-top: 12px; }
+
+.zsc-keep,
+.zsc-retake {
+  flex: 1;
+  padding: 11px;
+  border-radius: 11px;
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.zsc-keep {
+  border: 1px solid var(--zd-accent);
+  background: color-mix(in srgb, var(--zd-accent) 14%, transparent);
+  color: var(--zd-accent-bright);
+}
+
+.zsc-keep:hover { background: color-mix(in srgb, var(--zd-accent) 24%, transparent); }
+
+.zsc-retake {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+  color: var(--zp-dim);
+}
+
+.zsc-retake:hover { background: rgba(255,255,255,.08); color: var(--zp-text); }
+
+.zsc-keep i, .zsc-retake i { margin-right: 6px; }
+
+/* ==========================================================================
+    16d.  MAPS
+   ========================================================================== */
+
+.zsmp-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 11px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s, background .16s;
+}
+
+.zsmp-card:hover { border-color: var(--zd-accent); background: rgba(255,255,255,.05); }
+
+.zsmp-cardimg,
+.zsmp-cardph {
+  width: 62px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  background: rgba(0,0,0,.3);
+}
+
+.zsmp-cardph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zp-faint);
+  font-size: 17px;
+}
+
+.zsmp-cardmeta { flex: 1; min-width: 0; }
+.zsmp-cardname { font: 500 var(--zt-md) var(--zf); color: var(--zp-text); }
+.zsmp-cardsub { margin-top: 2px; font: 400 var(--zt-sm) var(--zf); color: var(--zp-faint); }
+
+/*
+ * The board.
+ *
+ * `position: relative` with the image at `width: 100%` and pins placed by
+ * percentage is the whole trick: the same stored coordinates land correctly at
+ * any width, and there is nothing to recompute when the panel resizes.
+ */
+.zsmp-board {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--zp-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #030a0e;
+}
+
+.zsmp-img { display: block; width: 100%; height: auto; }
+
+.zsmp-noimg {
+  padding: 46px 20px;
+  text-align: center;
+  font: 400 var(--zt-sm) var(--zf);
+  font-style: italic;
+  color: var(--zp-faint);
+}
+
+.zsmp-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--zd-accent-bright);
+  font-size: 15px;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.95));
+  transition: transform .16s, color .16s;
+}
+
+.zsmp-pin:hover { transform: translate(-50%, -100%) scale(1.18); }
+.zsmp-pin.on { color: var(--zd-gold-light); }
+.zsmp-pin.on i { animation: zspinbob 1.4s ease-in-out infinite; }
+
+@keyframes zspinbob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+.zsmp-pinlabel {
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(4,14,18,.86);
+  font: 500 var(--zt-2xs) var(--zf);
+  letter-spacing: .3px;
+  color: var(--zp-text);
+  white-space: nowrap;
+}
+
+.zsmp-note {
+  margin-top: 10px;
+  font: 400 var(--zt-sm)/var(--zt-lh) var(--zf);
+  color: var(--zp-dim);
+}
+
+.zsmp-detail {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--zd-accent) 7%, transparent);
+}
+
+.zsmp-dhead {
+  font: 600 var(--zt-md) var(--zf);
+  color: var(--zd-accent-bright);
+}
+
+.zsmp-dhead i { margin-right: 7px; }
+
+.zsmp-dimg {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0;
+  border: 1px solid var(--zp-line);
+  border-radius: 9px;
+  overflow: hidden;
+  background: none;
+  cursor: zoom-in;
+}
+
+.zsmp-dimg img { display: block; width: 100%; height: auto; }
+
+.zsmp-dnote {
+  margin-top: 9px;
+  font: 400 var(--zt-base)/var(--zt-lh) var(--zf);
+  color: var(--zp-text);
+  white-space: pre-wrap;
+}
+
+/* --- delivery ticks --- */
+
+/*
+ * On the timestamp line rather than beside the bubble, because a bubble that is
+ * three words wide has nowhere to put anything beside it.
+ */
+.zsm-tick {
+  margin-left: 5px;
+  font-size: 10px;
+  color: var(--zp-faint);
+  vertical-align: baseline;
+}
+
+.zsm-tick.on { color: var(--zd-accent); }
+.zsm-tick.on i { margin-right: 3px; }
+
+/* ==========================================================================
+    17.  SETTINGS
+   ========================================================================== */
+
+.zsp-label {
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--zd-gold-dark);
+  margin: 18px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(200,160,48,.14);
+}
+
+.zsp-label:first-child { margin-top: 0; }
+
+.zsp-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 9px;
+  background: rgba(0,0,0,.28);
+  color: var(--zp-text);
+  font: 400 var(--zt-md) var(--zf);
+  transition: border-color .15s;
+}
+
+.zsp-input::placeholder { color: var(--zp-faint); }
+.zsp-input:focus { border-color: var(--zd-accent); outline: none; }
+
+.zsp-hint {
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-faint);
+  margin-top: 6px;
+}
+
+.zsp-swatches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.zsp-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 8px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  background: rgba(255,255,255,.02);
+  cursor: pointer;
+  transition: border-color .16s, background .16s, transform .16s;
+}
+
+.zsp-swatch:hover { transform: translateY(-2px); background: rgba(255,255,255,.05); }
+
+.zsp-swatch.on {
+  border-color: var(--sw);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 0 16px -6px var(--sw);
+}
+
+.zsp-swdot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #fff, var(--sw) 46%, var(--swd));
+  box-shadow: 0 0 12px -3px var(--sw);
+}
+
+.zsp-swname {
+  font: 500 var(--zt-xs) var(--zf);
+  letter-spacing: .5px;
+  color: var(--zp-dim);
+}
+
+.zsp-swatch.on .zsp-swname { color: var(--zp-text); }
+
+/* --- toggle switch, over a real checkbox --- */
+
+.zsp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 2px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.zsp-tbox {
+  position: absolute;
+  opacity: 0;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.zsp-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: background .2s, border-color .2s;
+}
+
+.zsp-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--zp-dim);
+  transition: transform .2s cubic-bezier(.34,1.4,.64,1), background .2s;
+}
+
+.zsp-tbox:checked + .zsp-track {
+  background: color-mix(in srgb, var(--zd-accent) 30%, transparent);
+  border-color: var(--zd-accent);
+}
+
+.zsp-tbox:checked + .zsp-track::after {
+  transform: translateX(16px);
+  background: var(--zd-accent);
+}
+
+.zsp-tlabel { font: 400 var(--zt-md) var(--zf); color: var(--zp-text); }
+
+.zsp-danger {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px;
+  border: 1px solid rgba(224,96,96,.28);
+  border-radius: 9px;
+  background: rgba(224,96,96,.07);
+  color: #e08080;
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.zsp-danger:hover { background: rgba(224,96,96,.16); color: #f0a0a0; }
+
+/* ==========================================================================
+    18.  ALERTS  (the notification centre, now an app)
+   ========================================================================== */
+
+/*
+ * A row is a wrapper, not a button.
+ *
+ * It used to be a single <button>, which left nowhere valid to put a per-row
+ * dismiss control -- a button inside a button is invalid markup that browsers
+ * resolve by silently dropping one of them. The tappable part and the x are now
+ * siblings inside a plain div.
+ */
+.zsy-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,.05);
+  border-radius: 10px;
+  background: rgba(255,255,255,.028);
+  transition: background .15s, border-color .15s;
+}
+
+.zsy-row:hover { background: rgba(255,255,255,.055); border-color: rgba(200,160,48,.18); }
+
+/* An unread alert carries an accent edge, the way an unread thread does. */
+.zsy-row.zsy-new { border-left: 2px solid var(--zd-accent); }
+
+.zsy-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 4px 12px 13px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.zsy-open.zsy-flat { cursor: default; }
+
+/* The per-row dismiss. Bulk "Clear log" is still at the bottom of the list. */
+.zsy-x {
+  flex-shrink: 0;
+  width: 34px;
+  border: 0;
+  border-radius: 0 9px 9px 0;
+  background: none;
+  color: var(--zp-faint);
+  font-size: var(--zt-base);
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+
+.zsy-x:hover { color: #e06060; background: rgba(224,48,48,.1); }
+
+.zsy-icon { color: var(--zd-accent); font-size: var(--zt-md); margin-top: 2px; flex-shrink: 0; }
+
+.zsy-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.zsy-title { font: 500 var(--zt-md) var(--zf); color: var(--zp-text); }
+
+.zsy-body {
+  font: 400 var(--zt-base)/1.45 var(--zf);
+  color: var(--zp-faint);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.zsy-age {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 2px;
+  font: 400 var(--zt-xs) var(--zm);
+  color: var(--zp-faint);
+}
+
+/* ==========================================================================
+    18b.  BANK
+   ========================================================================== */
+
+.zsk-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+/*
+ * One card per configured currency, tinted from the currency's own colour so
+ * Astras and Marks are told apart at a glance rather than by reading the label.
+ */
+.zsk-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 14px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--cur-tint, #e0c050) 34%, transparent);
+  background: linear-gradient(150deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
+  text-align: center;
+}
+
+.zsk-glow {
+  position: absolute;
+  top: -60%;
+  right: -35%;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cur-tint, #e0c050), transparent 66%);
+  opacity: .14;
+  pointer-events: none;
+}
+
+.zsk-icon {
+  position: relative;
+  font-size: var(--zt-lg);
+  color: var(--cur-tint, #e0c050);
+}
+
+.zsk-amount {
+  position: relative;
+  font: 300 var(--zt-2xl) var(--zf);
+  color: #eaf6f7;
+  margin-top: 6px;
+  line-height: 1.25;
+}
+
+.zsk-label {
+  position: relative;
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2px;
+  margin-right: -2px;
+  text-transform: uppercase;
+  color: var(--zp-dim);
+  margin-top: 4px;
+}
+
+.zsk-lhead {
+  font: 600 var(--zt-2xs) var(--zm);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--zd-gold-dark);
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(200,160,48,.14);
+}
+
+.zsk-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  margin-bottom: 7px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.028);
+}
+
+.zsk-rdelta {
+  flex-shrink: 0;
+  min-width: 52px;
+  font: 600 var(--zt-md) var(--zm);
+  text-align: right;
+}
+
+.zsk-row.up .zsk-rdelta { color: #4fd995; }
+.zsk-row.down .zsk-rdelta { color: #e08a6a; }
+
+.zsk-rinfo { flex: 1; min-width: 0; }
+
+.zsk-rreason {
+  font: 400 var(--zt-base) var(--zf);
+  color: var(--zp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zsk-rmeta { font: 400 var(--zt-xs) var(--zm); color: var(--zp-faint); margin-top: 2px; }
+
+.zsk-rage { flex-shrink: 0; font: 400 var(--zt-xs) var(--zm); color: var(--zp-faint); }
+
+/* ==========================================================================
+    19.  LIGHTBOX
+   ========================================================================== */
+
+#zs-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--zz-lightbox);
+  font-family: var(--zf);
+  font-size: var(--zt-base);
+  line-height: var(--zt-lh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.86);
+  backdrop-filter: blur(6px);
+  animation: zsfin .18s;
+  cursor: zoom-out;
+}
+
+.zslb-wrap { position: relative; max-width: 88vw; max-height: 88vh; }
+
+.zslb-img {
+  max-width: 88vw;
+  max-height: 82vh;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid var(--zp-line);
+  box-shadow: 0 20px 60px rgba(0,0,0,.7);
+}
+
+/*
+ * Inside the image, not floating off its corner.
+ *
+ * Same shape of problem as `.zsu-close`: at `-16px` it sat outside
+ * `.zslb-wrap`, and with the wrap already capped at 88vw / 88vh a wide image on
+ * a narrow window pushed the button off the edge of the viewport. Inset over the
+ * image's own top-right corner, it is always reachable, and the backdrop is
+ * click-to-close anyway.
+ */
+.zslb-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--zp-line);
+  background: rgba(10,22,28,.86);
+  color: var(--zp-text);
+  font: 300 22px/1 var(--zf);
+  cursor: pointer;
+  transition: color .15s, transform .15s, background .15s;
+}
+
+.zslb-close:hover { color: var(--zd-accent); transform: rotate(90deg); }
+
+.zslb-cap {
+  margin-top: 10px;
+  text-align: center;
+  font: 400 var(--zt-md) var(--zf);
+  color: #c0cccc;
+}
+
+/*
+ * What you can do to the image you are looking at.
+ *
+ * Inside `.zslb-wrap`, under the picture, for the same reason `.zslb-close` is
+ * inside it: the wrap is already capped at 88vw/88vh, and anything hung outside
+ * that box can be pushed off the viewport by a wide image on a narrow window.
+ */
+.zslb-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  cursor: auto;
+}
+
+.zslb-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid var(--zp-line);
+  border-radius: 20px;
+  background: rgba(10,22,28,.9);
+  color: var(--zp-text);
+  font: 500 var(--zt-sm) var(--zf);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+
+.zslb-act:hover { border-color: var(--zd-accent); color: var(--zd-accent-bright); background: rgba(14,34,42,.95); }
+
+.zslb-danger { color: #e08080; border-color: rgba(224,96,96,.3); }
+.zslb-danger:hover { color: #f0a0a0; border-color: #e06060; background: rgba(40,14,14,.9); }
+
+/* The share picker, hung off the lightbox rather than the device. */
+.zslb-picker {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: min(340px, 88vw);
+  max-height: 78vh;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--zp-line);
+  border-radius: 14px;
+  background: #0b1a21;
+  box-shadow: 0 20px 60px rgba(0,0,0,.75);
+  cursor: auto;
+  animation: zsvInX .16s ease both;
+}
+
+.zslb-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--zd-accent) 14%, transparent);
+  color: var(--zd-accent-bright);
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.zslb-send:hover { background: color-mix(in srgb, var(--zd-accent) 26%, transparent); }
+
+
+/* ==========================================================================
+    20.  GM COMMAND CENTER
+   ========================================================================== */
+
+#zs-gm {
+  position: fixed;
+  inset: 0;
+  z-index: var(--zz-gm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(3px);
+  animation: zsfin .2s;
+  font-family: var(--zf);
+  font-size: var(--zt-base);
+  line-height: var(--zt-lh);
+}
+
+.zg-panel {
+  width: 760px;
+  max-width: 94vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid var(--zp-line);
+  background: linear-gradient(170deg, #11202a, #0a141a);
+  box-shadow: 0 20px 60px rgba(0,0,0,.65);
+  overflow: hidden;
+}
+
+.zg-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--zp-line);
+  background: rgba(0,0,0,.25);
+}
+
+.zg-title {
+  flex: 1;
+  font: 600 var(--zt-lg) var(--zf);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--zd-gold);
+}
+
+.zg-actsel {
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 7px;
+  background: #0a161c;
+  color: var(--zp-text);
+  font: 400 var(--zt-md) var(--zf);
+  max-width: 240px;
+}
+
+.zg-close {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--zp-dim);
+  font: 300 19px/1 var(--zf);
+  cursor: pointer;
+}
+
+.zg-close:hover { color: #e06060; background: rgba(255,255,255,.06); }
+
+.zg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--zp-line);
+}
+
+.zg-tab {
+  padding: 6px 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--zp-faint);
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: color .14s, background .14s, border-color .14s;
+}
+
+.zg-tab:hover { color: var(--zp-text); background: rgba(255,255,255,.05); }
+
+.zg-tab.active {
+  color: var(--zd-gold-light);
+  background: rgba(200,160,48,.1);
+  border-color: rgba(200,160,48,.3);
+}
+
+.zg-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,160,48,.3) transparent;
+}
+
+.zg-body::-webkit-scrollbar { width: 8px; }
+.zg-body::-webkit-scrollbar-thumb { background: rgba(200,160,48,.28); border-radius: 4px; }
+
+.zg-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.zg-row label {
+  width: 130px;
+  flex-shrink: 0;
+  font: 500 var(--zt-sm) var(--zm);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--zp-faint);
+}
+
+.zg-row input,
+.zg-row select,
+.zg-row textarea,
+.zg-arow input,
+.zg-arow select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 7px;
+  background: rgba(0,0,0,.3);
+  color: var(--zp-text);
+  font: 400 var(--zt-md) var(--zf);
+  transition: border-color .15s;
+}
+
+.zg-row input:focus,
+.zg-row select:focus,
+.zg-row textarea:focus,
+.zg-arow input:focus,
+.zg-arow select:focus { border-color: var(--zd-accent); outline: none; }
+
+.zg-row textarea { resize: vertical; min-height: 62px; line-height: 1.5; }
+
+.zg-arr { margin-bottom: 10px; }
+
+.zg-arow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+
+.zg-arow-wrap {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px;
+  background: rgba(255,255,255,.02);
+}
+
+.zg-add,
+.zg-save,
+.zg-send {
+  padding: 8px 15px;
+  margin-right: 7px;
+  border: 1px solid rgba(200,160,48,.28);
+  border-radius: 8px;
+  background: rgba(200,160,48,.1);
+  color: var(--zd-gold-light);
+  font: 500 var(--zt-md) var(--zf);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.zg-add:hover,
+.zg-save:hover,
+.zg-send:hover { background: rgba(200,160,48,.2); border-color: var(--zd-gold); }
+
+.zg-save {
+  margin-top: 10px;
+  background: color-mix(in srgb, var(--zd-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--zd-accent) 30%, transparent);
+  color: var(--zd-accent);
+}
+
+.zg-save:hover { background: color-mix(in srgb, var(--zd-accent) 20%, transparent); border-color: var(--zd-accent); }
+
+.zg-rm,
+.zg-pin {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 7px;
+  background: rgba(255,255,255,.03);
+  color: var(--zp-faint);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color .14s, background .14s, border-color .14s;
+}
+
+.zg-rm:hover { color: #e06060; border-color: rgba(224,96,96,.4); background: rgba(224,96,96,.1); }
+
+.zg-pin:hover { color: var(--zd-gold); border-color: rgba(200,160,48,.4); }
+
+.zg-pin.on {
+  color: var(--zd-gold-light);
+  background: rgba(200,160,48,.15);
+  border-color: rgba(200,160,48,.4);
+}
+
+.zg-daybadge {
+  flex-shrink: 0;
+  min-width: 84px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  font: 600 var(--zt-xs) var(--zm);
+  letter-spacing: 1px;
+  margin-right: -1px;
+  text-align: center;
+  color: var(--zp-faint);
+}
+
+.zg-daybadge.next {
+  color: var(--zd-accent);
+  border-color: color-mix(in srgb, var(--zd-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--zd-accent) 10%, transparent);
+}
+
+/* An action sitting in a labelled row rather than at the end of a section. */
+.zg-inline { width: auto; margin: 0; padding: 6px 12px; }
+
+.zg-browse { flex-shrink: 0; }
+
+.zg-pushhead { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--zp-line); }
+
+.zg-hint {
+  font: 400 var(--zt-base)/1.5 var(--zf);
+  color: var(--zp-faint);
+  margin: 8px 0;
+}
+
+.zg-divider {
+  height: 1px;
+  margin: 16px 0 12px;
+  background: linear-gradient(90deg, transparent, var(--zp-line), transparent);
+}
+
+.zg-sub {
+  font: 600 var(--zt-sm) var(--zm);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--zd-gold-dark);
+  margin: 14px 0 8px;
+}
+
+.zg-check,
+.zg-tog {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 var(--zt-md) var(--zf);
+  color: var(--zp-text);
+  cursor: pointer;
+}
+
+.zg-check input,
+.zg-tog input { accent-color: var(--zd-accent); cursor: pointer; }
+
+/* --- Danger Zone --- */
+
+.zg-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0;
+  font: 400 var(--zt-base)/1.45 var(--zf);
+  color: var(--zp-dim);
+  cursor: pointer;
+}
+
+.zg-check input { margin-top: 2px; flex-shrink: 0; }
+
+.zg-dhead { color: #e06060; }
+
+.zg-danger {
+  display: block;
+  width: 100%;
+  margin: 10px 0 6px;
+  padding: 11px 14px;
+  border: 1px solid rgba(224,64,64,.5);
+  border-radius: 9px;
+  background: rgba(224,48,48,.1);
+  color: #f0a0a0;
+  font: 600 var(--zt-base) var(--zf);
+  letter-spacing: .4px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.zg-danger:hover {
+  background: rgba(224,48,48,.2);
+  border-color: #e04040;
+  color: #ffd0d0;
+}
+
+.zg-danger i { margin-right: 7px; }
+
+
+/* --- the map editor --- */
+
+/*
+ * The same geometry as the player's board, because it has to be: pins are
+ * placed by clicking this and read by tapping that, and if the two disagreed
+ * about where 40% is the whole thing would be a guess.
+ */
+.zgm-board {
+  position: relative;
+  width: 100%;
+  margin: 8px 0 14px;
+  border: 1px solid var(--zp-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #030a0e;
+  cursor: crosshair;
+}
+
+.zgm-img { display: block; width: 100%; height: auto; }
+
+.zgm-noimg {
+  padding: 40px 20px;
+  text-align: center;
+  font: 400 var(--zt-sm) var(--zf);
+  font-style: italic;
+  color: var(--zp-faint);
+}
+
+.zgm-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--zd-accent-bright);
+  font-size: 15px;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.95));
+}
+
+.zgm-pin:hover { color: var(--zd-gold-light); }
+
+/* A marker the party has not found yet, so the GM can see what is still hidden. */
+.zgm-pin.hidden { color: var(--zp-faint); opacity: .75; }
+
+.zgm-pinrow {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  background: rgba(255,255,255,.02);
+}
+
+.zgm-pinrow textarea { width: 100%; margin-top: 6px; }
+
+.zg-wide { width: 100%; margin-top: 14px; padding: 9px; }
+
+/* --- the queue --- */
+
+.zgq-card {
+  margin-bottom: 12px;
+  padding: 11px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 11px;
+  background: rgba(255,255,255,.02);
+}
+
+.zgq-card textarea { width: 100%; margin-bottom: 7px; }
+
+.zgq-to {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: rgba(0,0,0,.22);
+}
+
+.zgq-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.zgq-send {
+  padding: 8px 16px;
+  border: 1px solid var(--zd-accent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--zd-accent) 14%, transparent);
+  color: var(--zd-accent-bright);
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+}
+
+.zgq-send:hover {
+  background: color-mix(in srgb, var(--zd-accent) 26%, transparent);
+  box-shadow: 0 0 16px -6px var(--zd-accent);
+}
+
+.zgq-send i { margin-right: 7px; }
+
+.zgq-sent { font: 400 var(--zt-xs) var(--zm); color: var(--zp-faint); }
+
+/* ==========================================================================
+    20b.  CAPTURE SWEEP  (GM only)
+   ========================================================================== */
+
+/*
+ * Its own overlay rather than a tab in the Command Center: the list can be forty
+ * rows long with a thumbnail each, which is not something a 480px panel column
+ * should be asked to hold.
+ */
+#zs-sweep {
+  position: fixed;
+  inset: 0;
+  z-index: var(--zz-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(4px);
+  font-family: var(--zf);
+  font-size: var(--zt-base);
+  line-height: var(--zt-lh);
+  animation: zsfin .18s;
+}
+
+.zsw-panel {
+  width: min(560px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid var(--zp-line);
+  border-radius: 14px;
+  background: var(--zp-panel);
+  box-shadow: 0 24px 70px rgba(0,0,0,.7);
+  color: var(--zp-text);
+}
+
+.zsw-head {
+  font: 600 var(--zt-lg) var(--zf);
+  color: var(--zd-gold-light);
+}
+
+.zsw-head i { margin-right: 8px; }
+
+.zsw-sub {
+  margin: 6px 0 14px;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-dim);
+}
+
+.zsw-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  background: rgba(0,0,0,.24);
+}
+
+.zsw-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 11px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  cursor: pointer;
+}
+
+.zsw-row:last-child { border-bottom: 0; }
+.zsw-row:hover { background: rgba(255,255,255,.04); }
+
+.zsw-box { flex-shrink: 0; width: 15px; height: 15px; margin: 0; cursor: pointer; }
+
+.zsw-thumb {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: cover;
+  background: rgba(255,255,255,.04);
+}
+
+.zsw-info { flex: 1; min-width: 0; }
+
+.zsw-name {
+  font: 400 var(--zt-sm) var(--zm);
+  color: var(--zp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zsw-owner { font: 400 var(--zt-xs) var(--zf); color: var(--zp-faint); margin-top: 2px; }
+
+.zsw-mini-row { display: flex; gap: 6px; margin-top: 8px; }
+
+.zsw-mini {
+  padding: 4px 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  background: none;
+  color: var(--zp-dim);
+  font: 500 var(--zt-xs) var(--zf);
+  cursor: pointer;
+}
+
+.zsw-mini:hover { color: var(--zp-text); border-color: var(--zd-accent); }
+
+.zsw-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+.zsw-keep,
+.zsw-del,
+.zsw-cancel {
+  flex: 1;
+  min-width: 130px;
+  padding: 10px;
+  border-radius: 10px;
+  font: 500 var(--zt-base) var(--zf);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.zsw-keep i, .zsw-del i { margin-right: 7px; }
+
+.zsw-keep {
+  border: 1px solid var(--zd-accent);
+  background: color-mix(in srgb, var(--zd-accent) 12%, transparent);
+  color: var(--zd-accent-bright);
+}
+
+.zsw-keep:hover { background: color-mix(in srgb, var(--zd-accent) 24%, transparent); }
+
+.zsw-del {
+  border: 1px solid rgba(224,96,96,.32);
+  background: rgba(224,96,96,.07);
+  color: #e08080;
+}
+
+.zsw-del:hover { background: rgba(224,96,96,.16); color: #f0a0a0; }
+
+.zsw-cancel {
+  flex: 0 0 auto;
+  min-width: 90px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.02);
+  color: var(--zp-dim);
+}
+
+.zsw-cancel:hover { color: var(--zp-text); background: rgba(255,255,255,.07); }
+
+.zsw-note {
+  margin-top: 12px;
+  font: 400 var(--zt-xs)/var(--zt-lh) var(--zf);
+  color: var(--zp-faint);
+}
+
+.zsw-note b { color: var(--zp-dim); font-weight: 500; }
+
+/* ==========================================================================
+    21.  ACCESSIBILITY & MOTION
+   ========================================================================== */
+
+/*
+ * Keyboard focus. v1.6 removed focus rings with `outline: none` in five places
+ * and put nothing back, which made the whole device unusable without a mouse.
+ * Rings are now scoped to :focus-visible, so they appear for keyboard users and
+ * stay out of the way of mouse users.
+ */
+#zs-ui :focus-visible,
+#zs-gm :focus-visible,
+#zs-icon :focus-visible,
+#zs-lightbox :focus-visible,
+.zs-toast:focus-visible {
+  outline: 2px solid var(--zd-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Buttons inherit the device's type rather than the browser's */
+#zs-ui button,
+#zs-gm button { font-family: var(--zf); }
+
+/*
+ * Form controls size to their border box.
+ *
+ * Every full-width field in the device is `width: 100%` with its own padding
+ * and a 1px border, which under the default `content-box` makes it 27px wider
+ * than its container -- so the right border of the device-name field, the reply
+ * composer and the contact notes textarea were all sliced off by the scroller's
+ * `overflow-x: hidden`. Caught by measuring the rendered page, not by the test
+ * suite, which asserts structure and has nothing to say about geometry.
+ *
+ * Scoped to form controls rather than applied blanket, so the tuned padding on
+ * the rest of the stylesheet keeps the box it was tuned against.
+ */
+#zs-ui input,
+#zs-ui textarea,
+#zs-ui select,
+#zs-gm input,
+#zs-gm textarea,
+#zs-gm select { box-sizing: border-box; max-width: 100%; }
+
+/*
+ * Reduced motion. The OS setting is honoured here; the Settings app's own
+ * toggle adds .zs-calm, and both land in the same place. The infinite orb
+ * animation, the unfurl, the sweep and every view transition stop; opacity
+ * fades that carry no movement are left alone.
+ */
+@media (prefers-reduced-motion: reduce) {
+  #zs-icon,
+  #zs-ui,
+  #zs-gm,
+  #zs-lightbox,
+  #zs-toasts * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+
+  #zs-icon *,
+  #zs-ui * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+
+  .zsu-frame,
+  .zsu-emitter,
+  .zsu-sweep,
+  .zsi-stone-halo,
+  .zsl-openglow { animation: none !important; }
+
+  .zsu-sweep { display: none; }
+  #zs-icon:hover { transform: none; }
+}
+
+#zs-ui.zs-calm .zsu-frame,
+#zs-ui.zs-calm .zsu-emitter,
+#zs-ui.zs-calm .zsu-sweep,
+#zs-ui.zs-calm .zsl-openglow,
+#zs-ui.zs-calm .zsm-msg { animation: none !important; }
+
+/*
+ * The view transitions stop here too. Without this the class only silenced the
+ * chrome, so switching the toggle on mid-slide left the outgoing view running
+ * its `zsvOut*` to completion over the top of the incoming one. ScrollUI.setCalm
+ * strips the leftover classes on the JS side; this is what makes the rule true
+ * for a view that is animating at the moment the class lands.
+ */
+#zs-ui.zs-calm .zsu-view { animation: none !important; }
+
+#zs-ui.zs-calm .zsu-sweep { display: none; }
+
+#zs-ui.zs-calm .zsn-app:hover,
+#zs-ui.zs-calm .zsr-vn-circle:hover,
+#zs-ui.zs-calm .zsx-item:hover { transform: none; }
+
+#zs-ui.zs-calm .zslb-picker,
+#zs-lightbox.zs-calm .zslb-picker { animation: none !important; }
+
+/*
+ * The darkroom shimmer is decoration; the spinner is not — it is the only thing
+ * saying the photo is still in flight. Calm mode stops the sweep and leaves the
+ * spinner turning, slowly.
+ */
+#zs-ui.zs-calm .zsx-dev::after { animation: none; background: rgba(0,0,0,.4); }
+#zs-ui.zs-calm .zsx-devspin { animation-duration: 2.4s; }
+
+#zs-ui.zs-calm .zsmp-pin:hover { transform: translate(-50%, -100%); }
+#zs-ui.zs-calm .zsmp-pin.on i { animation: none; }
+
+/* ==========================================================================
+    22.  RESPONSIVE
+   ========================================================================== */
+
+/*
+ * The panel is a fixed portrait column, so the only thing that has to give is
+ * height.
+ *
+ * The container queries are the important half. `.zsu-screen` declares
+ * `container-type: size`, so these read the *panel's* height -- which is what
+ * the lock screen actually lives inside. The old viewport media queries missed
+ * exactly the case that broke it: a window tall enough not to trigger them,
+ * holding a panel clamped to 92vh, whose lock screen was still too tall for its
+ * own fixed 44px padding, 68px clock and 22px rule margins.
+ *
+ * `.zsl-wrap` scrolls as a floor under all of this, so even a container query
+ * that misses cannot clip the unlock button any more.
+ */
+@container zsscreen (max-height: 760px) {
+  .zsl-wrap { padding-top: 30px; }
+  .zsl-clock { font-size: 54px; }
+  .zsl-rule { margin: 15px 0 2px; }
+  .zsl-event { margin-top: 11px; padding: 10px 18px; }
+  .zsl-pills { margin-top: 12px; }
+  .zsn-head { padding-top: 12px; }
+}
+
+@container zsscreen (max-height: 620px) {
+  .zsl-wrap { padding-top: 20px; gap: 2px; }
+  .zsl-clock { font-size: 42px; }
+  .zsl-device { margin-bottom: 7px; }
+  .zsl-date { margin-top: 3px; }
+  .zsl-rule { margin: 10px 0 2px; }
+  .zsl-event { margin-top: 8px; padding: 8px 16px; }
+  .zsl-pills { margin-top: 9px; }
+  .zsl-open { padding: 10px 24px 0; gap: 8px; }
+  .zsl-openglow { width: 36px; height: 36px; }
+  .zsn-tile { width: 54px; height: 54px; font-size: 21px; }
+  .zsn-grid { gap: 10px; }
+  .zsh-portrait { width: 66px; height: 66px; }
+}
+
+/*
+ * Viewport height, kept as a backstop for browsers without container queries.
+ * Foundry v13 ships Chromium well past their support cut-off, so in practice
+ * this never fires first -- but it costs nothing and it fails the right way.
+ */
+@media (max-height: 820px) {
+  .zsl-rule { margin: 16px 0 2px; }
+  .zsn-head { padding: 12px 50px 8px 18px; }
+}
+
+@media (max-height: 680px) {
+  .zsl-device { margin-bottom: 8px; }
+  .zsl-pills { margin-top: 12px; }
+}
+
+/* Narrow viewports: the grid loses a column before the tiles get cramped */
+@media (max-width: 520px) {
+  .zsu-frame { width: 100%; height: 94vh; max-height: 94vh; }
+  .zsn-grid,
+  .zsr-vn-grid { grid-template-columns: repeat(3, 1fr); }
+  .zsp-swatches { grid-template-columns: repeat(2, 1fr); }
+  .zsx-grid { grid-template-columns: repeat(2, 1fr); }
+  .zsc-view { aspect-ratio: 4 / 3; }
+  .zsq-tab { font-size: var(--zt-sm); }
+  .zsmp-pinlabel { display: none; }
+  .zsk-cards { grid-template-columns: 1fr; }
+}
+
+/* The Command Center is a form stack; it can simply narrow */
+@media (max-width: 720px) {
+  .zg-row { flex-direction: column; align-items: stretch; gap: 5px; }
+  .zg-row label { width: auto; }
+  .zg-arow { flex-wrap: wrap; }
+  .zgt-board { height: 60vh; }
+}
+
+/* ==========================================================================
+    22b.  THE GIFT TREE EDITOR
+   ========================================================================== */
+
+/*
+ * The board is a percentage coordinate space, exactly like the map preview it
+ * is modelled on: a node's x/y are percentages, so the board can be any size
+ * and the same tree reads correctly here and on the 480px device panel.
+ *
+ * Its height is viewport-relative rather than fixed. A tree is authored by
+ * looking at its shape, and a 300px letterbox is not a shape you can judge.
+ */
+
+.zg-subtabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.zg-subtab {
+  padding: 6px 13px;
+  border: 1px solid var(--zp-line);
+  border-radius: 999px;
+  background: rgba(0,0,0,.25);
+  color: var(--zp-dim);
+  font: 500 var(--zt-sm) var(--zf);
+  cursor: pointer;
+}
+
+.zg-subtab.active {
+  border-color: var(--zd-accent-deep);
+  background: rgba(80,216,232,.12);
+  color: var(--zd-accent-bright);
+}
+
+.zgt-board {
+  position: relative;
+  height: 46vh;
+  min-height: 280px;
+  margin: 10px 0 14px;
+  border: 1px solid var(--zp-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(200,160,48,.05) 1px, transparent 1px) 0 0 / 100% 10%,
+    linear-gradient(90deg, rgba(200,160,48,.05) 1px, transparent 1px) 0 0 / 10% 100%,
+    #030a0e;
+}
+
+/* While an edge is being dragged, every node is a target and should say so. */
+.zgt-board.linking .zgt-node { cursor: crosshair; }
+
+/*
+ * The coordinate space, inset by half a node.
+ *
+ * A node is centred on its own percentage and carries a link handle 9px below
+ * it and a grant badge 6px above, so a node at 0% or 100% would have half of
+ * itself outside the board — and the board hides overflow to keep its rounded
+ * border. The inset leaves 0-100 meaning exactly what it means on the device;
+ * it only stops the extremes being unreachable. Edges live in here too, or the
+ * lines would not meet the nodes they join.
+ */
+.zgt-stage {
+  position: absolute;
+  inset: 42px 72px;
+}
+
+.zgt-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.zgt-edge {
+  stroke: var(--zd-accent-deep);
+  stroke-width: .35;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/*
+ * The click target for deleting an edge. Invisible and fat, because a stroke
+ * thin enough to look right is far too thin to hit.
+ */
+.zgt-hit {
+  stroke: transparent;
+  stroke-width: 10;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.zgt-hit:hover + .zgt-edge { stroke: var(--zd-gold-light, #e8c76a); }
+
+.zgt-ghost {
+  stroke: var(--zd-accent-bright);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.zgt-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 74px;
+  max-width: 120px;
+  padding: 7px 9px;
+  border: 1px solid var(--zp-line);
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--zp-panel-2), var(--zp-panel));
+  color: var(--zp-text);
+  font: 500 var(--zt-sm)/1.25 var(--zf);
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.zgt-node:active { cursor: grabbing; }
+.zgt-node.sel { border-color: var(--zd-accent-bright); box-shadow: 0 0 0 2px rgba(166,242,251,.25); }
+
+/*
+ * The four kinds are drawn differently because the renderer on the device will
+ * draw them differently, and a tree that looks one way to its author and
+ * another to its student is a tree authored blind.
+ */
+.zgt-node.k-buff      { border-left: 3px solid #50d8e8; }
+.zgt-node.k-freeform  { border-left: 3px solid #b48ce8; }
+.zgt-node.k-milestone { border-left: 3px solid #e8c76a; }
+.zgt-node.k-capstone  { border-left: 3px solid #e88c6a; border-radius: 14px; }
+
+/* The preview states, from the points figure typed above the board. */
+.zgt-node.s-affordable  { box-shadow: 0 0 10px rgba(80,216,232,.25); }
+.zgt-node.s-locked-cost { opacity: .72; }
+.zgt-node.s-locked-req  { opacity: .45; }
+
+.zgt-label { word-break: break-word; }
+
+.zgt-cost {
+  font: 600 var(--zt-xs) var(--zm);
+  color: var(--zd-accent-bright);
+}
+
+.zgt-grantmark {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 10px;
+  color: var(--zd-gold-light, #e8c76a);
+}
+
+.zgt-handle {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--zp-line);
+  border-radius: 50%;
+  background: var(--zp-ink);
+  color: var(--zp-dim);
+  font-size: 9px;
+  cursor: crosshair;
+  opacity: 0;
+}
+
+.zgt-node:hover .zgt-handle,
+.zgt-node.sel .zgt-handle { opacity: 1; }
+.zgt-handle:hover { color: var(--zd-accent-bright); border-color: var(--zd-accent); }
+
+.zgt-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 400 var(--zt-sm) var(--zf);
+  font-style: italic;
+  color: var(--zp-faint);
+}
+
+.zgt-inspector {
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 11px;
+  background: rgba(255,255,255,.02);
+}
+
+.zgt-req {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: rgba(0,0,0,.28);
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-text);
+}
+
+.zgt-req.bad { color: #e88c6a; }
+
+.zgt-drop {
+  padding: 14px;
+  margin-bottom: 8px;
+  border: 1px dashed var(--zp-line);
+  border-radius: 9px;
+  text-align: center;
+  font: 400 var(--zt-sm)/1.45 var(--zf);
+  color: var(--zp-faint);
+}
+
+.zgt-drop.over {
+  border-color: var(--zd-accent);
+  border-style: solid;
+  color: var(--zd-accent-bright);
+  background: rgba(80,216,232,.08);
+}
+
+.zgt-gimg { width: 22px; height: 22px; border-radius: 4px; flex: none; }
+
+.zgt-gname {
+  flex: 1;
+  min-width: 0;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * A labelled destructive action sitting in a row of ordinary ones.
+ *
+ * `.zg-rm` is built for a bare × — faint, tiny, no label — and a word inside it
+ * reads as a disabled button rather than a dangerous one. This is the same idea
+ * as `.zg-danger` without the full-width block treatment.
+ */
+.zg-delbtn {
+  width: auto;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(224,64,64,.4);
+  border-radius: 7px;
+  background: rgba(224,48,48,.08);
+  color: #e8a0a0;
+  font: 500 var(--zt-sm) var(--zf);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.zg-delbtn:hover {
+  background: rgba(224,48,48,.18);
+  border-color: #e04040;
+  color: #ffd0d0;
+}
+
+.zgt-inspector .zg-delbtn { margin-top: 8px; }
+
+.zgt-problems { margin-bottom: 10px; }
+
+.zgt-ok {
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: rgba(80,216,232,.08);
+  font: 500 var(--zt-sm) var(--zf);
+  color: var(--zd-accent-bright);
+}
+
+.zgt-prob {
+  display: block;
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 8px 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(232,140,106,.1);
+  color: #f0b9a1;
+  font: 400 var(--zt-sm)/1.4 var(--zf);
+  text-align: left;
+  cursor: pointer;
+}
+
+.zgt-prob.warn { background: rgba(232,199,106,.08); color: #e8d5a1; }
+.zgt-prob:hover { border-color: currentColor; }
+
+.zg-ptcount {
+  flex: 1;
+  font: 500 var(--zt-md) var(--zf);
+  color: var(--zd-accent-bright);
+}
+
+.zg-ptin { max-width: 90px; flex: none !important; }
+
+.zg-tkname {
+  flex: 1;
+  min-width: 0;
+  font: 400 var(--zt-sm) var(--zf);
+  color: var(--zp-text);
+}
+
+.zg-warn { color: #e8c76a; }
+
+/* ==========================================================================
+    23.  FOUNDRY CORE CSS  —  containment
+   ========================================================================== */
+
+/*
+ * The device does not live in a document of its own. It is appended to
+ * `document.body` inside a running Foundry client, and Foundry's `foundry2.css`
+ * styles bare *element* selectors globally -- `button`, `input`, `textarea`,
+ * `select`, `h1`-`h6` -- with no scoping that would keep it out of a module's
+ * own DOM. Every one of those elements in the scroll was therefore being sized
+ * by Foundry, not by this stylesheet.
+ *
+ * The damage was concentrated in one rule:
+ *
+ *     a.button, button {
+ *       height:      var(--button-size);   ... where --button-size is 2em
+ *       min-height:  var(--button-size);
+ *       line-height: normal;
+ *       font-size:   var(--font-size-14);
+ *       ...
+ *     }
+ *
+ * This stylesheet never declares `height`, `min-height`, `line-height` or
+ * `font-size` on a button -- it had no reason to, since buttons size to their
+ * content -- so those four fell through to Foundry unopposed and every button
+ * in the device was clamped to a flat 2em box regardless of what was inside it.
+ * `.zsl-open` needs 34px for its glow and its caption and was given 27, which
+ * is why TOUCH THE STONE sat outside its own rectangle; the home grid's
+ * `.zsn-app` needs 38 and was given 28, which is why the tiles crowded the row
+ * beneath them. Every app screen with buttons in a stack had the same fault,
+ * which is exactly the "everything encroaches on the thing above and below it"
+ * report -- and the notice board was the one screen that looked right because
+ * it is the one screen built from divs.
+ *
+ * WHY `:where()`
+ *
+ * Foundry declares a layer order and puts all of the above inside it. An
+ * unlayered rule beats a layered rule outright, whatever the specificity on
+ * either side, so a *zero-specificity* unlayered selector is enough to take
+ * these properties back -- and being zero-specificity it then loses to every
+ * ordinary rule in this stylesheet, including bare class selectors like
+ * `.zsl-open`. That is the property that matters: this section restores the
+ * defaults the device was designed against and then gets out of the way. A
+ * conventional `#zs-ui button { ... }` would have won these fights too, and
+ * would also have overridden the module's own `.zsl-open` and `.zsn-app`.
+ *
+ * Nothing here is styling. It is only the removal of styling that should never
+ * have arrived. Keep it that way: a real rule belongs in its own section.
+ */
+
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox),
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox) :where(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+
+/*
+ * Buttons size to their content again.
+ *
+ * `display`/`justify-content`/`align-items`/`gap` are deliberately left as
+ * Foundry sets them. A centred flex box with a small gap is what almost every
+ * button in the device wants anyway -- the icon-and-label buttons in the
+ * command centre have no gap of their own and read as `[icon]Save` without it
+ * -- and the ones that want otherwise say so themselves. This section removes
+ * damage, not defaults.
+ */
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox) :where(button) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  transition: none;
+  cursor: pointer;
+}
+
+/*
+ * Foundry makes every child of a button `pointer-events: none` so its own
+ * handlers always see the button. The device reads `event.target` in places and
+ * has its own hover states on button children, so that goes back too.
+ */
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox) :where(button) > * {
+  pointer-events: auto;
+}
+
+/*
+ * Fields keep their own box. Foundry pins text inputs and selects to a fixed
+ * `--input-height` with a matching `line-height`, and gives every textarea a
+ * 60px floor in a monospace face.
+ */
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox)
+  :where(input, select, textarea) {
+  height: auto;
+  min-height: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+}
+
+/* Headings are typography here, not Foundry's document headings. */
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox)
+  :where(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+/* Lists in the device are layout, never bulleted document lists. */
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox) :where(ul, ol) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where(#zs-icon, #zs-ui, #zs-gm, #zs-toasts, #zs-lightbox) :where(p) { margin: 0; }

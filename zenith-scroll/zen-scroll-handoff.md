@@ -183,6 +183,242 @@ because a split turns a missing import into a runtime error that `node --check`
 cannot see — run them after moving code between files.
 
 
+
+---
+
+## v1.7 — The bracelet (shell + aesthetics + C1)
+
+The proportion problem from section 0 is resolved, by option (1) plus the
+reframing your bracelet idea made available: **the bracelet is the object, the
+screen is a projection**, so the thing you tap and the thing you get never had
+to be the same shape. The icon is a metal cuff with a gold-set cabochon; the
+screen is a 430×780 portrait panel made of light — no bezel, no gems, no metal —
+that unfurls from the bracelet's actual on-screen position.
+
+### New invariants — do not undo these
+
+- **The frame is built once; only the stage repaints.** `render()` draws the
+  projection, `_paint(dir)` swaps the view inside it. This is what makes the
+  transitions possible and what lets the status bar, dock and entry animation
+  survive a refresh. Never go back to `render()` on every state change — and
+  never call `render()` for a change that isn't structural, because it replays
+  the unfurl. Retint (`applyAccent`) or repaint (`_paint`) instead.
+- **`data-zs-field` and `data-zs-scroll` are load-bearing.** `_paint()` carries
+  focus, cursor, selection and scroll offset across a repaint using them. A new
+  text field that autosaves should carry a `data-zs-field`. This is a backstop,
+  not a replacement for `{silent: true}` — keep using both.
+- **Apps are declared in `APPS` in `core.mjs`.** `ScrollUI` dispatches to
+  `_app_<id>`; a smoke test asserts every registered app has a renderer. There
+  is no tab bar to crowd any more, so adding an app is two lines and a method.
+- **World content is world content.** Notices and the calendar live in world
+  settings via `world.mjs`. Do not put them back on actors. Dismissals stay
+  per-actor — that split is the whole point of C1.
+- **Accent colours are tokenised.** `--zd-accent` / `-deep` / `-bright` are set
+  per student on `#zs-icon` and `#zs-ui`. Nothing may hardcode a teal again; a
+  hardcoded one gave Ember scrolls two-tone message bubbles.
+- **Foundry ships Font Awesome *Free*.** `fa-grid-2` was Pro and rendered as an
+  empty box in the dock. Check before adding an icon.
+
+### What landed
+
+- **E1 shell**: lock screen, home app grid, status bar (clock / aether signal /
+  charge / bell), notification centre, dock. Two new apps: Notices and Settings.
+- **E5 personalisation**: accent colour, device name, skip-lock, reduce motion.
+- **D1 partial + D2 + D3**: targeted stage repaints, preserved in-flight input,
+  push/pop and cross-fade transitions.
+- **C1**: notices and calendar to world scope, with a one-time seeding migration
+  that harvests the richest student's list, leaves the old actor data in place,
+  and falls back to per-actor notices until a GM has logged in to run it.
+- **C4**: inferred `ts` backfill on pre-v1.6 messages.
+- **C5**: Marks item name is a setting. **C6**: schema version recorded.
+- **E2 partial**: `muted` wired up (silences the pulse and toast, still delivers
+  and still logs), day separators, grouped senders in group threads.
+- **Accessibility**: real buttons with accessible names throughout, focus rings
+  restored on `:focus-visible`, `prefers-reduced-motion` plus a per-student
+  toggle, Escape steps back through the stack.
+- **Housekeeping**: z-index ladder tokenised and the bracelet lifted clear of
+  Foundry's window range, responsive breakpoints, README, CHANGELOG, LICENSE,
+  .gitignore, module.json repo metadata.
+- Tests: 64 → **134 checks**.
+
+### Verified visually, not just in tests
+
+The bracelet, lock screen, home grid and a message thread were rendered in a
+browser against the real stylesheet and looked at. Three things that only showed
+up that way and are now fixed: the first bracelet drawing read as an egg (the
+band was a vertical ellipse — it is now a cuff wall between two rims), the home
+dock icon was a Pro-only glyph, and the sent-bubble timestamp was grey on a
+saturated accent fill.
+
+### Still open
+
+- **C2** (UUID keying) — untouched. Renaming an actor still detaches their
+  conversations, portrait lookups and relationship entry. Next in line.
+- **C3** (where conversations live) — still per-actor copies, still needs a real
+  decision before it is built.
+- **D4** (virtualise long threads), **D5** (ApplicationV2) — untouched.
+- **E2 remainder**: player-side attachments, delete/leave a conversation, typing
+  indicators, read receipts, search, queueing sends while no GM is connected.
+- **E3** (rank-up moments, tags, locked contacts, relationship web) — untouched.
+  The Contacts screen is unchanged apart from the shell around it.
+- **E4** (calendar app, store, notes, map, exam tracker) — the Notices app
+  landed; the rest are still open, and C1 has now cleared the way for them.
+- **E6 sound** — still nothing. Worth noting a constraint discovered here: the
+  module ships no binary assets by design, so this wants WebAudio-synthesised
+  tones rather than four files, or the no-assets rule has to give.
+- **E7 GM tooling**: the Command Center got the new visual language and its
+  Notices/Calendar sections, but FilePicker for image paths, preview-as-player,
+  scheduled messages, bulk relationship editing and undo are all still open.
+- **Marks** still has no sink. It is displayed and never spent.
+- `_backup-v1.5/` is still tracked in git; `.gitignore` covers it going forward
+  but untracking it is `git rm --cached`, and that is your call.
+- No localization. `.zsm-broadcasts` orphan CSS is gone with the rewrite.
+
+### Next session
+
+`PLAN-v1.8.md` was written at the end of this session and has since been built —
+see the v1.8 section below.
+
+---
+
+## v1.8 — Room to breathe (layout, Bank, Danger Zone)
+
+`PLAN-v1.8.md` is now **built**, sections 1 through 6 plus the order of work in
+section 8. What is deliberately not built is at the bottom of this section.
+
+### New invariants — do not undo these
+
+- **There is no status bar.** Do not add one back. Its four jobs were
+  redistributed on purpose: the clock duplicated the lock screen's and the
+  charge meter was flavour (both dropped); the bell is the **Alerts** app plus a
+  badge in the home header; the aether meter is a strip that appears in
+  **Messages** only when no GM is connected. If something new needs to be
+  visible at all times, it needs a better argument than the bar had.
+- **Name a type token, never a raw pixel size.** `--zt-2xs` … `--zt-2xl` plus
+  `--zt-display`, all defined in section 1 of the stylesheet. The whole point is
+  that "make the text bigger" is one edit rather than twenty. The only surviving
+  raw sizes are icon glyph sizes and line-heights, which are not type.
+- **Nothing positioned to escape a scroller can be relied on to escape it.**
+  `.zsu-scroller` is `overflow-y: auto; overflow-x: hidden` — a clipping context
+  on both axes — and `.zsu-screen` clips on its rounded corners. Anything that
+  has to break out belongs on `<body>` at `position: fixed`, placed from the
+  anchor's `getBoundingClientRect()`. That is what `_showTip()` does, and it is
+  the shape any future popover should copy.
+- **Any full-height view needs an overflow strategy.** `.zsl-wrap` had none,
+  which is the whole of the lock screen bug: `margin-top: auto` collapses when
+  content exceeds the box, and the content then overflows into an ancestor that
+  clips. A scrolling floor costs nothing and means a layout mistake degrades
+  instead of losing a control.
+- **The lock screen responds to the panel, not the window.** `.zsu-screen`
+  declares `container-type: size` and the lock screen's spacing is tuned in
+  `@container zsscreen (max-height: …)` blocks. The old viewport media queries
+  missed exactly the case that broke — a tall window holding a panel clamped
+  against its `vh` cap. The media queries are kept as a backstop only.
+- **Form controls are `border-box`.** Every full-width field is `width: 100%`
+  with its own padding and border; under the default `content-box` that makes it
+  27px wider than its container, and the scroller silently ate the right border.
+- **Currency is a list.** `currencies` (world setting) of
+  `{ key, itemName, label, icon, tint, primary }`. Read it through
+  `currencyList()` / `getBalances()` / `getCurrency()`, never by reaching for an
+  item name directly. `getMarks()` survives as a thin alias and honours the old
+  `marksItemName` setting for worlds that renamed their item before v1.8.
+- **Grants go through `grantCurrency()`.** It moves the item quantity *and*
+  writes the ledger line. Changing a quantity without a ledger line puts the
+  Bank app back to being a read-out.
+- **`portraitOf()` for the small circular avatars; `resolveKeyArt()` for the
+  contact detail panel.** The detail panel is 96×118 through `object-fit: cover`
+  — a square token loses its sides and any ring baked into the art gets cut
+  through. That asymmetry is deliberate, not an oversight.
+- **A button never goes inside a button.** The Alerts row was a single
+  `<button>`, which left nowhere valid for a per-row dismiss; browsers resolve
+  the nesting by silently dropping one of them. The row is a wrapper now.
+- **The Danger Zone passphrase is a misclick guard, not security.** Do not let
+  it be described as more. It is a salted hash because world settings sync to
+  every client, but anyone with GM rights and a console bypasses the dialog.
+  What protects the campaign is Foundry's permission model.
+
+### What landed
+
+- **The lock screen clipping bug** (plan 1a), fixed three ways: a scrolling
+  floor, the dock collapsing rather than hiding, and container queries. Swept
+  880px → 280px; the unlock affordance is reachable at every height and needs
+  scrolling only below 340px.
+- **Type scale** (plan 2): 121 font declarations across ~20 pixel values reduced
+  to 9 named steps, then raised once.
+- **Bigger everything**: panel 430×780 → 480×880 at 92vh, tiles 52 → 62px,
+  contact circles 54 → 62px, dock and app-bar controls to match.
+- **Status bar removed** (plan 3), with Alerts as an app, a home-header bell and
+  the Messages aether strip.
+- **Remaining overlaps** (plan 1b–1f): body-level tooltips, inset tile badges,
+  the close button moved inside the panel, capped-and-skipped emitter haze, the
+  centred letter-space gap cancelled on nine labels.
+- **Centring audit**: the dock uses `space-evenly` with fixed-width children;
+  the app bar is a `1fr auto 1fr` grid. All 36 app bars measure dead centre,
+  including the Messages thread header that was the visible offender.
+- **Bank app** (plan 6) with currency generalisation and the ledger, plus
+  `zs.grant` / `grantAll` / `balances` / `ledger` and a Command Center Bank tab.
+- **Token images** (plan 5) with `useTokenImages`, plus Refresh Portraits for
+  contacts that stored the old art.
+- **Per-notification dismiss** and **the brighter SCROLL label** (plan 5).
+- **Danger Zone** (plan 4): JSON export, salted-hash passphrase with a pure-JS
+  fallback for insecure contexts, and a clear that needs the passphrase and the
+  word `DELETE` and unsets rather than empties.
+- Tests: 134 → **225 checks**.
+
+### Verified visually, not just in tests
+
+`node tests/render-preview.mjs` is new and is now the tool for this. It renders
+every view through the real `ScrollUI`, serialises it, and writes one page
+holding all 14 views at three panel heights against the real stylesheet.
+
+The v1.8 pass rendered all 42 panels, measured every element against its screen
+box, swept the lock screen from 880px to 280px, measured all 36 app-bar titles
+and the dock's spacing, and checked the tooltip's flip-below behaviour. That
+found one bug the plan had not: **three form controls were `content-box` at
+`width: 100%`**, so the right border of the device-name field, the reply
+composer and the contact notes textarea were being clipped by the scroller.
+
+Worth repeating because it stays true: none of the layout bugs in this release
+were catchable by the smoke suite. It renders views and asserts structure, not
+geometry. Build the preview and look.
+
+### Still open
+
+- **C2 (UUID keying)** — still unstarted, and now the oldest item on the list.
+  Conversations, portrait lookups and relationship entries all key off actor
+  *name*, so renaming an actor detaches all three at once, and it gets worse the
+  longer the contact list grows. It was listed in the v1.8 order of work but
+  carries no design in the plan — it needs a schema migration and a decision
+  about what happens to existing data, not a footnote to a layout release.
+- **Sound (E6)** — still an open decision, unchanged: WebAudio-synthesised tones
+  (keeps the no-binary-assets rule, thinner palette) or four small files (breaks
+  the rule, sounds better). Blocks per-contact chimes.
+- **The `PLAN-v1.8.md` brainstorm (section 7)** is untouched by design — it was
+  explicitly "beyond what you asked for". In the order the plan ranked them:
+  requisition/store app (the natural sink for the currency the Bank now surfaces
+  and the ledger now tracks), Do Not Disturb (`statusPreset` is *still* stored
+  and never read, dead since v1.5), rank-up moments, a home widget row, group
+  chat from the picker, thread search, Directory vs Contacts, campus map.
+- **C3** (where conversations live), **D4** (virtualise long threads), **D5**
+  (ApplicationV2) — untouched.
+- **E2 remainder**: player-side attachments, delete/leave a conversation, typing
+  indicators, read receipts, search, queueing sends while no GM is connected.
+- **E7 GM tooling**: FilePicker for image paths, preview-as-player, scheduled
+  messages, bulk relationship editing, undo.
+- `_backup-v1.5/` is still tracked in git. `.gitignore` covers it going forward;
+  untracking it is `git rm --cached`, still your call.
+- No localization.
+
+### Next session
+
+There is no successor to `PLAN-v1.8.md` yet. The two things with the strongest
+case, for different reasons:
+
+- **C2**, because it is a correctness problem that quietly gets worse and every
+  session that adds contacts makes the eventual migration bigger.
+- **The requisition/store app**, because v1.8 gave currency a surface and a
+  history but still no sink — Marks and Astras accumulate and are never spent.
+
 ---
 
 # Roadmap — Tracks C, D and E

@@ -1,8 +1,8 @@
 {
   "id": "zenith-scroll",
   "title": "Zenith Academy Scroll",
-  "description": "Magical device HUD for Zenith Academy. Full conversation system with 1-on-1 and group chats, VN-style relationship panel with personal notes, gallery, gift progression, event countdowns, toast notifications, auto-timestamps, and GM command center.",
-  "version": "1.6.0",
+  "description": "A magitech bracelet that projects a personal screen. Lock screen and home app grid, with apps for student ID, schedule, Gift progression, messages (1-on-1 and group), a visual-novel contact panel, the school notice board, a gallery, a bank with a currency ledger, and an alert log — plus a GM Command Center behind it all.",
+  "version": "1.12.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -18,5 +18,12 @@
   "styles": [
     "styles/zenith-scroll.css"
   ],
-  "socket": true
+  "socket": true,
+  "url": "https://github.com/Arcana127/ZenithModules",
+  "manifest": "https://github.com/Arcana127/ZenithModules/releases/latest/download/module.json",
+  "download": "https://github.com/Arcana127/ZenithModules/releases/latest/download/zenith-scroll.zip",
+  "readme": "https://github.com/Arcana127/ZenithModules/blob/main/zenith-scroll/README.md",
+  "changelog": "https://github.com/Arcana127/ZenithModules/blob/main/zenith-scroll/CHANGELOG.md",
+  "bugs": "https://github.com/Arcana127/ZenithModules/issues",
+  "license": "https://github.com/Arcana127/ZenithModules/blob/main/LICENSE"
 }

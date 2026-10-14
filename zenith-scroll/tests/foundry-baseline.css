@@ -1,0 +1,182 @@
+/*
+ * Foundry VTT core CSS — the part of it that reaches into a module's own DOM.
+ *
+ * WHY THIS FILE EXISTS
+ *
+ * `render-preview.mjs` used to render the device against the module stylesheet
+ * and nothing else, so the preview was a *more forgiving* environment than the
+ * one the module actually ships into. Every button in the device came out the
+ * right size in the preview and was crushed to 2em in Foundry, because Foundry
+ * styles the bare `button` element globally and the preview had no opinion.
+ * "Touch the stone" spilling out of its own box is the same bug seen from the
+ * player's chair.
+ *
+ * This is a transcription of the rules in `foundry2.css` (v14.367) whose
+ * selectors are bare element names, so they match inside `#zs-ui` and `#zs-gm`
+ * whether Foundry means them to or not. It is deliberately NOT the whole file:
+ * everything Foundry scopes to `.application`, `.app`, `#interface` &c. cannot
+ * reach the device and would only be noise here.
+ *
+ * The `@layer` wrapper is load-bearing, not decoration. Foundry declares its
+ * layer order up front and puts all of this inside it, and an *unlayered* rule
+ * beats a layered one no matter how specific the layered one is. That is the
+ * whole reason section 23 of the module stylesheet can neutralise this with
+ * zero-specificity `:where()` selectors: they are unlayered, so they win, and
+ * being zero-specificity they still lose to every real rule in the module.
+ * Drop the `@layer` here and the preview would show the module losing fights
+ * it actually wins.
+ *
+ * Keep this in step with Foundry on a major version bump. The check is
+ * mechanical: diff the `reset`, `elements.typography` and `elements.forms`
+ * layers of `foundry2.css` for rules with bare element selectors.
+ */
+
+@layer reset, variables, elements, blocks, applications, compatibility,
+       layouts, system, modules, exceptions;
+
+@layer reset {
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  body {
+    width: 100%;
+    margin: 0;
+    text-rendering: optimizeSpeed;
+    line-height: 1.25;
+    user-select: none;
+  }
+
+  body, h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+
+  ul[role="list"], ol[role="list"] { list-style: none; }
+
+  img { max-width: 100%; display: block; }
+
+  input, button, textarea, select { font: inherit; }
+}
+
+@layer variables.base {
+  :root {
+    --font-size-14: 0.875rem;
+    --font-sans: "Signika", ui-sans-serif, sans-serif;
+    --font-monospace: monospace;
+    --font-h1: var(--font-sans);
+    --font-h2: "Amiri", serif;
+    --font-h3: var(--font-sans);
+    --font-h4: var(--font-sans);
+    --font-h1-size: 2.5rem;
+    --font-h2-size: 2rem;
+    --font-h3-size: 1.5rem;
+    --font-h4-size: 1.25rem;
+    --input-height: 2rem;
+    --input-background-color: rgba(0, 0, 0, 0.35);
+    --input-border-color: #7a7971;
+    --input-text-color: #eee;
+    --input-box-shadow: none;
+    --color-text-primary: #b5b3a4;
+    --color-text-emphatic: #f7f3e8;
+    --cursor-text: text;
+    --cursor-pointer: pointer;
+  }
+
+  /*
+   * Foundry sizes the interface off the body, not the root. 15px/1.25 is what
+   * the device actually inherits, and it is the reason a module rule that omits
+   * `font-size` does not get 16px.
+   */
+  body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+  }
+}
+
+@layer elements.typography {
+  h1, h2, h3, h4, h5, h6 {
+    margin: 2rem 0 1rem;
+    line-height: 1;
+  }
+
+  h1:first-child, h2:first-child, h3:first-child,
+  h4:first-child, h5:first-child, h6:first-child { margin-top: 0; }
+
+  h1 { font-family: var(--font-h1); font-size: var(--font-h1-size); color: var(--color-text-emphatic); }
+  h2 { font-family: var(--font-h2); font-size: var(--font-h2-size); color: var(--color-text-emphatic); }
+  h3 { font-family: var(--font-h3); font-size: var(--font-h3-size); color: var(--color-text-primary); }
+  h4 { font-family: var(--font-h4); font-size: var(--font-h4-size); color: var(--color-text-primary); }
+}
+
+@layer elements.forms {
+  input[type=text],
+  input[type=number],
+  input[type=password],
+  input[type=date],
+  input[type=time],
+  input[type=datetime-local],
+  input[type=search],
+  input[type=file],
+  select {
+    width: 100%;
+    height: var(--input-height);
+    line-height: var(--input-height);
+    padding: 0 0.5rem;
+    background: var(--input-background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-shadow: var(--input-box-shadow);
+    outline: 1px solid transparent;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--input-text-color);
+    user-select: text;
+    transition: outline-color 0.5s;
+    cursor: var(--cursor-text);
+  }
+
+  textarea {
+    min-height: 60px;
+    padding: 0.25rem 0.5rem;
+    background: var(--input-background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    font-family: var(--font-monospace);
+    font-size: var(--font-size-14);
+    color: var(--input-text-color);
+    user-select: text;
+  }
+
+  input[type="checkbox"], input[type="radio"] { appearance: none; }
+
+  /*
+   * The rule that did the damage. `height` AND `min-height` AND `line-height`
+   * AND `font-size`, on the bare element, for every button in the document.
+   */
+  a.button,
+  button {
+    --button-size: 2em;
+    --button-background-color: rgba(0, 0, 0, 0.35);
+    --button-border-color: #7a7971;
+    --button-text-color: #ccc;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: var(--button-size);
+    min-height: var(--button-size);
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+    background: var(--button-background-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 4px;
+    color: var(--button-text-color);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-14);
+    line-height: normal;
+    text-decoration: none;
+    cursor: var(--cursor-pointer);
+    transition: 0.5s;
+  }
+
+  a.button > *,
+  button > * { pointer-events: none; }
+}
